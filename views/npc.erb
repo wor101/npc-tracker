@@ -22,3 +22,6 @@
     </li>
   <% end %>
 </ul>
+<form id="delete" action="/npcs/<%= @npc.id %>/delete" method="post">
+  <input type="submit" value="Delete NPC">
+</form>

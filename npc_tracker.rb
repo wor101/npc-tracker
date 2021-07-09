@@ -58,6 +58,14 @@ helpers do
   def load_interaction_involved_character_objects(interaction_id)
     load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
   end
+
+  def create_new_npc(npc_hash)
+    @storage.add_new_npc(npc_hash)
+  end
+
+  def delete_npc(npc_id)
+    @storage.delete_npc(npc_id)
+  end
 end
 
 # home page
@@ -89,8 +97,17 @@ post "/npcs/new" do
     ancestory: params[:ancestory],
     short_description: params[:short_description] }
 
-  @storage.add_new_npc(npc_hash)
+  create_new_npc(npc_hash)
 
+  redirect "/npcs"
+end
+
+# delete an npc from the database
+post "/npcs/:id/delete" do
+  npc_id = params[:id]
+  delete_npc(npc_id)
+
+  #need to implement session messages
   redirect "/npcs"
 end
 
@@ -110,7 +127,7 @@ get "/pcs" do
   erb :pcs, layout: :layout
 end
 
-# display a signle pc
+# display a single pc
 get "/pcs/:id" do
   pc_id = params[:id]
   @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first

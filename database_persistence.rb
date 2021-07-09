@@ -71,15 +71,15 @@ class DatabasePersistence
   def add_new_npc(npc)
     sql = <<~SQL
       INSERT INTO characters (name, 
-                        picture_link, 
-                        stat_block_name, 
-                        stat_block_link, 
-                        main_location, 
-                        alignment,
-                        ancestory,
-                        gender, 
-                        short_description)
-      VALUES ($1, $2, $3, $4,$5, $6, $7, $8)
+                              picture_link, 
+                              stat_block_name, 
+                              stat_block_link, 
+                              main_location, 
+                              alignment,
+                              ancestory,
+                              gender, 
+                              short_description)
+      VALUES ($1, $2, $3, $4,$5, $6, $7, $8, $9)
     SQL
     query( sql, npc[:name], 
                 npc[:picture_link],
@@ -92,6 +92,10 @@ class DatabasePersistence
                 npc[:short_description] )
   end
 
+  def delete_npc(id)
+    sql = "DELETE FROM characters WHERE id = $1"
+    query(sql, id)
+  end
 
 
   private
