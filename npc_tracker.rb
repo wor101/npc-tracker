@@ -55,6 +55,10 @@ helpers do
       )      
     end
   end
+
+  def load_interaction_involved_character_objects(interaction_id)
+    load_npc_objects(@storage.retrieve_single_interaction_characters(interaction_id))
+  end
 end
 
 # home page
@@ -72,6 +76,9 @@ end
 get "/npcs/:id" do
   npc_id = params[:id]
   @npc = load_npc_objects(@storage.retrieve_single_character(npc_id)).first
+  @npc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(npc_id))
+
+
   erb :npc, layout: :layout
 end
 
@@ -84,8 +91,9 @@ end
 # display a single interaction
 get "/interactions/:id" do
   interaction_id = params[:id].to_i
-
   @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
+  # need to implement retrieve_single_interaction_characters(id) in database_persistence
+  @interaction_npcs = load_npc_objects(@storage.retrieve_single_interaction_characters(interaction_id))
   erb :interaction, layout: :layout
 end
 

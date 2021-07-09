@@ -40,10 +40,6 @@ class Interaction
     @short_description = short_description
     @full_description = full_description
   end
-
-  def get_id
-    @id
-  end
 end
 
 # Interaction.new( interaction_hash[:id],

@@ -32,6 +32,17 @@ class DatabasePersistence
     convert_character_pg_to_array_of_hashes(result)
   end
 
+  def retrieve_single_character_interactions(character_id)
+    sql = <<~SQL
+      SELECT interactions.* FROM interactions
+      JOIN characters_interactions ON characters_interactions.interaction_id = interactions.id
+      WHERE characters_interactions.character_id = $1
+    SQL
+    result = query(sql, character_id)
+
+    convert_interaction_pg_to_array_of_hashes(result)
+  end
+
   def retrieve_all_interactions
     sql = "SELECT * FROM interactions"
     result = query(sql)
@@ -45,6 +56,19 @@ class DatabasePersistence
     
     convert_interaction_pg_to_array_of_hashes(result)
   end
+
+  def retrieve_single_interaction_characters(interaction_id)
+    sql = <<~SQL
+      SELECT characters.* FROM characters
+      JOIN characters_interactions ON characters_interactions.character_id = characters.id
+      WHERE characters_interactions.interaction_id = $1
+    SQL
+    result = query(sql, interaction_id)
+
+    convert_character_pg_to_array_of_hashes(result)
+  end
+
+
 
   private
 

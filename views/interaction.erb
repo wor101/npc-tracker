@@ -6,4 +6,11 @@
   <li>Date: <%= @interaction.date %></li>
   <li>Description: <%= @interaction.full_description %></li>
 </ul>
-<p><%= puts @interaction %></p>
+<h2>NPCs</h2>
+<ul>
+  <% @interaction_npcs.each do |npc| %>
+    <li>
+      <a href="/npcs/<%= npc.id %>"><%= npc.name %></a>
+    </li>
+  <% end %>
+</ul>
