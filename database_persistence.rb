@@ -1,4 +1,5 @@
 require "pg"
+require "pry"
 
 class DatabasePersistence
   def initialize(logger)
@@ -19,16 +20,38 @@ class DatabasePersistence
     @db.exec_params(statement, params)
   end
 
-  def test_method
-    "Test successful!"
-  end
-
-  def load_all_characters
+  def retrieve_all_characters
     sql = "SELECT * FROM characters"
     result = query(sql)
 
-    result.map do |tuple|
-      { id: tuple["id"], 
+    convert_character_pg_to_array_of_hashes(result)
+  end
+
+  def retrieve_single_character(id)
+    sql = "SELECT * FROM characters WHERE id = $1"
+    result = query(sql, id)
+    convert_character_pg_to_array_of_hashes(result)
+  end
+
+  def retrieve_all_interactions
+    sql = "SELECT * FROM interactions"
+    result = query(sql)
+
+    convert_interaction_pg_to_array_of_hashes(result)
+  end
+
+  def retrieve_single_interaction(id)
+    sql = "SELECT * FROM interactions WHERE id = $1"
+    result = query(sql, id)
+    
+    convert_interaction_pg_to_array_of_hashes(result)
+  end
+
+  private
+
+  def convert_character_pg_to_array_of_hashes(character_pg)
+    character_pg.map do |tuple|
+      { id: tuple["id"].to_i, 
         player_character: tuple["player_character"] == true,
         name: tuple["name"],
         picture_link: tuple["picture_link"],
@@ -40,21 +63,20 @@ class DatabasePersistence
         gender: tuple["gender"],
         short_description: tuple["short_description"] }
     end
-
-#     CREATE TABLE characters (
-#   id serial PRIMARY KEY,
-#   player_character boolean DEFAULT false,
-#   name varchar(150) NOT NULL,
-#   picture_link text,
-#   stat_block_name varchar(150),
-#   stat_block_link text,
-#   main_location int,
-#   alignment varchar(50) CHECK (alignment IN ('Lawful Good', 'Lawful Neutral', 'Lawful Evil', 'Neutral Good', 'True Neutral', 'Neutral Evil', 'Chaotic Good', 'Chaotic Neutral', 'Chaotic Evil')),
-#   ancestory varchar(150),
-#   gender varchar(150),
-#   short_description text
-# );
-
   end
 
+  def convert_interaction_pg_to_array_of_hashes(interaction_pg)
+    interaction_pg.map do |tuple|
+      { id: tuple["id"].to_i,
+        attitude: tuple["attitude"],
+        date: tuple["date"],
+        short_description: tuple["short_description"],
+        full_description: tuple["full_description"] }
+    end
+  end
 end
+# id serial PRIMARY KEY,
+# attitude varchar(25) CHECK (attitude IN ('friendly', 'indifferent', 'hostile')),
+# date timestamp DEFAULT CURRENT_TIMESTAMP,
+# short_description varchar(250) NOT NULL,
+# full_description text

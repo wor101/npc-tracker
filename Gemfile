@@ -7,6 +7,9 @@ gem "erubis"
 
 gem "pg"
 
+gem "pry"
+gem "rubocop"
+
 group :production do
   gem "puma"
 end
