@@ -52,9 +52,7 @@ helpers do
                        interaction_hash[:date],
                        interaction_hash[:short_description],
                        interaction_hash[:full_description]                       
-      )
-
-      
+      )      
     end
   end
 end

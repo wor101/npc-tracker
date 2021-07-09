@@ -1,6 +1,8 @@
 <h1>NPCs</h1>
 <ul>
   <% @npcs.each do |npc| %>
-    <li><a href="/npcs/<%= npc.id %>" ><%= npc.name %></a></li>
+    <li>
+      <a href="/npcs/<%= npc.id %>" ><%= npc.name %></a>
+    </li>
   <% end %>
 </ul>

@@ -1,5 +1,4 @@
 require "pg"
-require "pry"
 
 class DatabasePersistence
   def initialize(logger)
@@ -75,8 +74,3 @@ class DatabasePersistence
     end
   end
 end
-# id serial PRIMARY KEY,
-# attitude varchar(25) CHECK (attitude IN ('friendly', 'indifferent', 'hostile')),
-# date timestamp DEFAULT CURRENT_TIMESTAMP,
-# short_description varchar(250) NOT NULL,
-# full_description text

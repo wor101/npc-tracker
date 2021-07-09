@@ -1,6 +1,8 @@
 <h1>Interactions</h1>
 <ul>
   <% @interactions.each do |interaction| %>
-    <li><%= interaction.short_description %></li>
+    <li>
+      <a href="/interactions/<%= interaction.id %>"><%= interaction.short_description %></a>
+    </li>
   <% end %>
 </ul>
