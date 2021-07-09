@@ -68,6 +68,30 @@ class DatabasePersistence
     convert_character_pg_to_array_of_hashes(result)
   end
 
+  def add_new_npc(npc)
+    sql = <<~SQL
+      INSERT INTO characters (name, 
+                        picture_link, 
+                        stat_block_name, 
+                        stat_block_link, 
+                        main_location, 
+                        alignment,
+                        ancestory,
+                        gender, 
+                        short_description)
+      VALUES ($1, $2, $3, $4,$5, $6, $7, $8)
+    SQL
+    query( sql, npc[:name], 
+                npc[:picture_link],
+                npc[:stat_block_name],
+                npc[:stat_block_link],
+                npc[:main_location],
+                npc[:alignment],
+                npc[:ancestory],
+                npc[:gender],
+                npc[:short_description] )
+  end
+
 
 
   private

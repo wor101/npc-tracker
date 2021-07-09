@@ -72,6 +72,28 @@ get "/npcs" do
   erb :npcs, layout: :layout
 end
 
+# forms to create a new npc
+get "/npcs/new" do
+
+  erb :npc_new, layout: :layout
+end
+
+# submit and create a new pc
+post "/npcs/new" do
+  npc_hash = { name: params[:name],
+    picture_link: params[:picture_link],
+    stat_block_name: params[:stat_block_name],
+    stat_block_link: params[:stat_block_link],
+    main_location: params[:main_location],
+    alignment: params[:alignment],
+    ancestory: params[:ancestory],
+    short_description: params[:short_description] }
+
+  @storage.add_new_npc(npc_hash)
+
+  redirect "/npcs"
+end
+
 # display a single npc
 get "/npcs/:id" do
   npc_id = params[:id]
