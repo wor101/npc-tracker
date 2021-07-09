@@ -33,13 +33,23 @@ class NPCTrackerTest < MiniTest::Test
     assert_equal(200, last_response.status)
   end
 
-  def test_interactions
-    get '/interactions'
+  def test_npc_1
+    get '/npcs/1'
     assert_equal(200, last_response.status)
   end
 
-  def test_npc_1
-    get '/npcs/1'
+  def test_pcs
+    get '/pcs'
+    assert_equal(200, last_response.status)
+  end
+
+  def test_pc_16 
+    get '/pcs/16'
+    assert_equal(200, last_response.status)
+  end
+
+  def test_interactions
+    get '/interactions'
     assert_equal(200, last_response.status)
   end
 

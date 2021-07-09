@@ -27,9 +27,8 @@ after do
 end
 
 helpers do
-  def load_npc_objects(array_of_character_hashes)
+  def load_character_objects(array_of_character_hashes)
     array_of_character_hashes.map do |character_hash|
-      next if character_hash[:player_character] == "true"
       NonPlayerCharacter.new( character_hash[:id].to_i, 
                               character_hash[:player_character],
                               character_hash[:name],
@@ -57,7 +56,7 @@ helpers do
   end
 
   def load_interaction_involved_character_objects(interaction_id)
-    load_npc_objects(@storage.retrieve_single_interaction_characters(interaction_id))
+    load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
   end
 end
 
@@ -67,19 +66,35 @@ get "/" do
 end
 
 # list all npcs
-get "/npcs" do
-  @npcs = load_npc_objects(@storage.retrieve_all_characters)
+get "/npcs" do  
+  @all_characters = load_character_objects(@storage.retrieve_all_characters)
+  @npcs = @all_characters.select { |character| character.player_character == false }
   erb :npcs, layout: :layout
 end
 
 # display a single npc
 get "/npcs/:id" do
   npc_id = params[:id]
-  @npc = load_npc_objects(@storage.retrieve_single_character(npc_id)).first
+  @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
   @npc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(npc_id))
 
-
   erb :npc, layout: :layout
+end
+
+# list all pcs
+get "/pcs" do  
+  @all_characters = load_character_objects(@storage.retrieve_all_characters)
+  @pcs = @all_characters.select { |character| character.player_character == true }
+  erb :pcs, layout: :layout
+end
+
+# display a signle pc
+get "/pcs/:id" do
+  pc_id = params[:id]
+  @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first
+  @pc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(pc_id))
+
+  erb :pc, layout: :layout
 end
 
 # list all interactions
@@ -93,7 +108,7 @@ get "/interactions/:id" do
   interaction_id = params[:id].to_i
   @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
   # need to implement retrieve_single_interaction_characters(id) in database_persistence
-  @interaction_npcs = load_npc_objects(@storage.retrieve_single_interaction_characters(interaction_id))
+  @interaction_npcs = load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
   erb :interaction, layout: :layout
 end
 

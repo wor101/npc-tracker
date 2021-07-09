@@ -1,0 +1,24 @@
+<h1>PC</h1>
+<ul>
+  <li>ID:<%= @pc.id %></li>
+  <li>Name: <%= @pc.name %></li>
+  <li>StatBlock: <%= @pc.stat_block_name %></li>
+  <li>Location: <%= @pc.main_location %></li>
+  <li>Alignment: <%= @pc.alignment %></li>
+  <li>Ancestory: <%= @pc.ancestory %></li>
+  <li>Gender: <%= @pc.gender %></li>
+  <li>Description: <%= @pc.short_description %></li>
+</ul>
+<h2>Interactions</h2>
+<ul>
+  <% @pc_interactions.each do |interaction| %>
+    <% involved_characters = load_interaction_involved_character_objects(interaction.id) %>
+    <li>
+      <a href="/interactions/<%= interaction.id %>"><%= interaction.short_description %></a>
+      : <% involved_characters.each do |character| %>
+        <% next if character.name == @pc.name %>
+          <a href="/npcs/<%= character.id %>"><%= character.name %></a>  
+        <% end %>
+    </li>
+  <% end %>
+</ul>

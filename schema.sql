@@ -40,4 +40,13 @@ bond text,
 flaw_secret text
 );
 
+CREATE TABLE player_character_details (
+  id serial PRIMARY KEY,
+  character_id integer NOT NULL REFERENCES characters(id) DELETE ON CASCADE,
+  player_name text,
+  character_class text,
+  character_subclass text,
+  character_level integer,
+)
+
 

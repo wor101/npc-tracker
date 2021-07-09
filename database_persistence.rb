@@ -75,7 +75,7 @@ class DatabasePersistence
   def convert_character_pg_to_array_of_hashes(character_pg)
     character_pg.map do |tuple|
       { id: tuple["id"].to_i, 
-        player_character: tuple["player_character"] == true,
+        player_character: tuple["player_character"] == "t",
         name: tuple["name"],
         picture_link: tuple["picture_link"],
         stat_block_name: tuple["stat_block_name"],

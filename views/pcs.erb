@@ -1,0 +1,8 @@
+<h1>PCs</h1>
+<ul>
+  <% @pcs.each do |pc| %>
+    <li>
+      <a href="/pcs/<%= pc.id %>" ><%= pc.name %></a>
+    </li>
+  <% end %>
+</ul>
