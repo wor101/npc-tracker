@@ -1,0 +1,30 @@
+<h1>Update Interaction</h1>
+<form method="post" action="/interactions/<%= @interaction.id %>/update" >
+  <label for="attitude">Attitude:</label>
+  <select name="attitude" id="attitude">
+    <% ['friendly', 'indifferent', 'hostile'].each do |att| %>
+      <% if @interaction.attitude == att %>
+        <option value="<%= att %>" selected><%= att %></option>
+      <% else %>
+        <option value="<%= att %>"><%= att %></option>
+      <% end %>
+    <% end %>
+  </select><br>
+  <label for="date">Date:</label>
+  <input id="date" name="date" type="datetime-local" value="1900-01-01T12:00"><br>
+  <label for="short_description">Short Description:</label><br>
+  <textarea id="short_description" name="short_description" rows="5" cols="50"><%= @interaction.short_description %></textarea><br>
+  <label for="full_description">Full Description:</label><br>
+  <textarea id="full_description" name="full_description" rows="20" cols="50"><%= @interaction.full_description %></textarea><br>
+  <label for="involved_characters">Involved Characters:</label><br>
+  <select name="involved_characters[]" id="involved_characters" multiple required>
+    <% @characters.each do |character| %>
+      <% if @involved_character_ids.include?(character.id)%>
+        <option value="<%= character.id %>" selected><%= character.name %></option>
+      <% else %>
+        <option value="<%= character.id %>"><%= character.name %></option>
+      <% end %>
+    <% end %>
+  </select><br>
+  <input type="submit" value="Submit">
+</form>

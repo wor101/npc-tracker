@@ -91,10 +91,22 @@ helpers do
     @storage.add_new_interaction(interaction_hash)
     interaction_id = @storage.retrieve_single_interaction_id(interaction_hash)
     @storage.add_interaction_to_cross_reference_table(interaction_id, interaction_hash[:involved_characters])
+    session[:success] = "#{interaction_hash[:short_description]} created succesfully."
   end
 
   def delete_interaction(interaction_id)
     @storage.delete_interaction(interaction_id)
+  end
+
+  def update_interaction(interaction_hash, interaction_id, involved_character_ids)
+    # updates interaction but not involved parties
+    @storage.update_interaction(interaction_hash, interaction_id)
+  
+    # delete current entries in characters_interactions that contain all character_id && interaction_id
+    @storage.remove_interaction_entries_from_characters_interactions(interaction_id)
+  
+    # add entries to characters_interactions with for all new character_id with the interaction_id
+    @storage.add_interaction_entries_to_characters_interactions(involved_character_ids, interaction_id)
   end
 
   def validate_character_hash(npc_hash)
@@ -314,6 +326,33 @@ post "/interactions/:id/delete" do
 
   session[:success] = "Interaction successfully deleted."
   redirect "/interactions"
+end
+
+# display form to update an interaction
+get "/interactions/:id/update" do
+interaction_id = params[:id]
+@interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
+involved_characters = load_interaction_involved_character_objects(interaction_id)
+@involved_character_ids = involved_characters.map { |character| character.id }
+
+#binding.pry
+@characters = load_character_objects(@storage.retrieve_all_characters)
+
+erb :interaction_update, layout: :layout
+end
+
+# update an existing interaction
+post "/interactions/:id/update" do
+  interaction_id = params[:id].to_i
+  interaction_hash = convert_params_to_interaction_hash
+  involved_character_ids = params[:involved_characters]
+
+  redirect "/interactions/#{interaction_id}/update" unless validate_interactions_hash(interaction_hash)
+
+  update_interaction(interaction_hash, interaction_id, involved_character_ids)
+
+  session[:success] = "#{interaction_hash[:short_description]} has been updated!"
+  redirect "/interactions/#{interaction_id}"
 end
 
 # display a single interaction

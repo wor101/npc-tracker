@@ -160,6 +160,43 @@ class DatabasePersistence
           )
   end
 
+  def update_interaction(interaction, interaction_id)  
+    # if any charcters removed from interaction, must delete their related entries from cross-reference table
+    sql = <<~SQL
+      UPDATE interactions SET
+        attitude = $1,
+        date = $2,
+        short_description = $3,
+        full_description = $4
+      WHERE id = $5
+    SQL
+    query(sql, interaction[:attitude],
+               interaction[:date],
+               interaction[:short_description],
+               interaction[:full_description],
+               interaction_id
+          )
+  end
+
+  # delete current entries in characters_interactions that contain all character_id && interaction_id
+  def remove_interaction_entries_from_characters_interactions(interaction_id)
+    sql = <<~SQL
+      DELETE FROM characters_interactions WHERE interaction_id = $1
+    SQL
+
+    query(sql, interaction_id)
+  end
+  
+  # add entries to characters_interactions with for all new character_id with the interaction_id
+  def add_interaction_entries_to_characters_interactions(involved_character_ids, interaction_id)
+    sql = <<~SQL
+      INSERT INTO characters_interactions(interaction_id, character_id)
+      VALUES ($1, $2)
+    SQL
+
+    involved_character_ids.each { |character_id| query(sql, interaction_id, character_id)}
+  end
+
   def add_interaction_to_cross_reference_table(interaction_id, involved_character_ids)
     sql = <<~SQL
       INSERT INTO characters_interactions (character_id, interaction_id)
