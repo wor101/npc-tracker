@@ -18,6 +18,7 @@ class NonPlayerCharacter
       @id = id
       @player_character = player_character
       @name = name
+      @picture_link = picture_link
       @stat_block_name = stat_block_name
       @stat_block_link = stat_block_link
       @main_location = main_location

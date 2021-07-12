@@ -68,9 +68,24 @@ class DatabasePersistence
     convert_character_pg_to_array_of_hashes(result)
   end
 
-  def add_new_npc(npc)
+  def retrieve_single_interaction_id(interaction_hash)
     sql = <<~SQL
-      INSERT INTO characters (name, 
+      SELECT DISTINCT id FROM interactions
+      WHERE attitude = $1
+      AND short_description = $2
+      AND full_description = $3
+    SQL
+    result = query(sql, interaction_hash[:attitude], 
+                        interaction_hash[:short_description],
+                        interaction_hash[:full_description]
+                  )
+    result.first["id"].to_i
+  end
+
+  def add_new_character(character)
+    sql = <<~SQL
+      INSERT INTO characters (name,
+                              player_character,
                               picture_link, 
                               stat_block_name, 
                               stat_block_link, 
@@ -79,21 +94,22 @@ class DatabasePersistence
                               ancestory,
                               gender, 
                               short_description)
-      VALUES ($1, $2, $3, $4,$5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4,$5, $6, $7, $8, $9, $10)
     SQL
-    query( sql, npc[:name], 
-                npc[:picture_link],
-                npc[:stat_block_name],
-                npc[:stat_block_link],
-                npc[:main_location],
-                npc[:alignment],
-                npc[:ancestory],
-                npc[:gender],
-                npc[:short_description]
+    query( sql, character[:name],
+                character[:player_character],
+                character[:picture_link],
+                character[:stat_block_name],
+                character[:stat_block_link],
+                character[:main_location],
+                character[:alignment],
+                character[:ancestory],
+                character[:gender],
+                character[:short_description]
           )
   end
 
-  def update_npc(npc, npc_id)
+  def update_character(character, character_id)
     sql = <<~SQL
       UPDATE characters SET
           name = $1,
@@ -108,24 +124,50 @@ class DatabasePersistence
         WHERE id = $10
     SQL
 
-    query(sql, npc[:name],
-               npc[:picture_link],
-               npc[:stat_block_name],
-               npc[:stat_block_link],
-               npc[:main_location],
-               npc[:alignment],
-               npc[:ancestory],
-               npc[:gender],
-               npc[:short_description],
-               npc_id.to_i
+    query(sql, character[:name],
+               character[:picture_link],
+               character[:stat_block_name],
+               character[:stat_block_link],
+               character[:main_location],
+               character[:alignment],
+               character[:ancestory],
+               character[:gender],
+               character[:short_description],
+               character_id.to_i
           )
   end
 
-  def delete_npc(id)
+  def delete_character(id)
     sql = "DELETE FROM characters WHERE id = $1"
     query(sql, id)
   end
 
+  def delete_interaction(id)
+    sql = "DELETE FROM interactions WHERE id = $1"
+    query(sql, id)
+  end
+
+  def add_new_interaction(interaction)
+    sql = <<~SQL
+      INSERT INTO interactions (attitude, date, short_description, full_description) 
+        VALUES ($1, $2, $3, $4)
+    SQL
+    
+    query(sql, interaction[:attitude], 
+               interaction[:date], 
+               interaction[:short_description],
+               interaction[:full_description]
+          )
+  end
+
+  def add_interaction_to_cross_reference_table(interaction_id, involved_character_ids)
+    sql = <<~SQL
+      INSERT INTO characters_interactions (character_id, interaction_id)
+        VALUES ($1, $2)
+    SQL
+
+    involved_character_ids.each { |character_id| query(sql, character_id, interaction_id) }
+  end
 
   private
 

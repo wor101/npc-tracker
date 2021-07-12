@@ -60,15 +60,44 @@ helpers do
     load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
   end
 
-  def create_new_npc(npc_hash)
-    @storage.add_new_npc(npc_hash)
+  def create_new_character(character_hash)
+    @storage.add_new_character(character_hash)
+    session[:success] = "#{character_hash[:name]} has been created."
   end
 
-  def delete_npc(npc_id)
-    @storage.delete_npc(npc_id)
+  def delete_character(character_id)
+    @storage.delete_character(character_id)
   end
 
-  def validate_npc_details(npc_hash)
+  def confirm_character_deleted(id)
+    if @storage.retrieve_single_character(id).empty?
+      session[:success] = "Character succesfully deleted."
+    else
+      name = @storage.retrieve_single_character(id)[:name]
+      session[:error] = "ERROR: #{name} was not deleted."
+    end
+  end
+
+  def confirm_interaction_deleted(interaction_id)
+    if @storage.retrieve_single_interaction(interaction_id).empty?
+      session[:success] = "Interaction succesfully deleted."
+    else
+      @storage.retrieve_single_interaction(interaction_id)[:short_description]
+      session[:error] = "ERROR: #{short_description} was not deleted."
+    end
+  end
+
+  def create_new_interaction(interaction_hash)
+    @storage.add_new_interaction(interaction_hash)
+    interaction_id = @storage.retrieve_single_interaction_id(interaction_hash)
+    @storage.add_interaction_to_cross_reference_table(interaction_id, interaction_hash[:involved_characters])
+  end
+
+  def delete_interaction(interaction_id)
+    @storage.delete_interaction(interaction_id)
+  end
+
+  def validate_character_hash(npc_hash)
     if npc_hash[:name].empty? 
       session[:error] = "NPC must be assigned a valid name."
       false
@@ -77,8 +106,21 @@ helpers do
     end
   end
 
+  def validate_interactions_hash(interaction_hash)
+    if interaction_hash[:involved_characters].empty? 
+      session[:error] = "A character must be selected for the interaction."
+      false
+    elsif interaction_hash[:short_description].empty?
+      session[:error] = "Interaction must include a short description."
+      false
+    else
+      true
+    end
+  end
+
   def convert_params_to_npc_hash
     { name: params[:name].strip,
+    player_character: false,
     picture_link: params[:picture_link],
     stat_block_name: params[:stat_block_name].strip,
     stat_block_link: params[:stat_block_link],
@@ -87,6 +129,26 @@ helpers do
     ancestory: params[:ancestory].strip,
     gender: params[:gender].strip,
     short_description: params[:short_description].strip }
+  end
+
+  def convert_params_to_pc_hash
+    { name: params[:name].strip,
+    player_character: true,
+    picture_link: params[:picture_link],
+    stat_block_name: params[:stat_block_name].strip,
+    stat_block_link: params[:stat_block_link],
+    main_location: params[:main_location].to_i,
+    alignment: params[:alignment],
+    ancestory: params[:ancestory].strip,
+    gender: params[:gender].strip,
+    short_description: params[:short_description].strip }
+  end
+
+  def convert_params_to_interaction_hash
+    { attitude: params["attitude"], date: params["date"], 
+      short_description: params["short_description"], 
+      full_description: params["full_description"],
+      involved_characters: params["involved_characters"]}
   end
 end
 
@@ -102,18 +164,18 @@ get "/npcs" do
   erb :npcs, layout: :layout
 end
 
-# forms to create a new npc
+# display form to create a new npc
 get "/npcs/new" do
 
   erb :npc_new, layout: :layout
 end
 
-# submit and create a new pc
+# create a new npc in the database
 post "/npcs/new" do
   npc_hash = convert_params_to_npc_hash
 
-  redirect "/npcs/new" unless validate_npc_details(npc_hash)
-  create_new_npc(npc_hash)
+  redirect "/npcs/new" unless validate_character_hash(npc_hash)
+  create_new_character(npc_hash)
 
   redirect "/npcs"
 end
@@ -121,9 +183,11 @@ end
 # delete an npc from the database
 post "/npcs/:id/delete" do
   npc_id = params[:id]
-  delete_npc(npc_id)
+  delete_character(npc_id)
 
-  #need to implement session messages
+  confirm_character_deleted(npc_id)
+
+  session[:success] = "NPC successfully deleted."
   redirect "/npcs"
 end
 
@@ -140,8 +204,10 @@ post "/npcs/:id/update" do
   npc_id = params[:id].to_i
   npc_hash = convert_params_to_npc_hash
 
-  binding.pry
-  @storage.update_npc(npc_hash, npc_id)
+  redirect "/npcs/#{npc_id}/update" unless validate_character_hash(npc_hash)
+
+  @storage.update_character(npc_hash, npc_id)
+  session[:success] = "#{npc_hash[:name]} has been updated!"
   redirect "/npcs/#{npc_id}"
 end
 
@@ -161,6 +227,53 @@ get "/pcs" do
   erb :pcs, layout: :layout
 end
 
+# display form to create a new pc
+get "/pcs/new" do
+
+  erb :pc_new, layout: :layout
+end
+
+# create a new pc in the database
+post "/pcs/new" do
+  pc_hash = convert_params_to_pc_hash
+
+  redirect "/pcs/new" unless validate_character_hash(pc_hash)
+  create_new_character(pc_hash)
+
+  redirect "/pcs"
+end
+
+# delete an pc from the database
+post "/pcs/:id/delete" do
+  pc_id = params[:id]
+  delete_character(pc_id)
+
+  confirm_character_deleted(pc_id)
+
+  session[:success] = "PC successfully deleted."
+  redirect "/pcs"
+end
+
+# display form to update a pc
+get "/pcs/:id/update" do
+  pc_id = params[:id]
+  @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first
+
+  erb :pc_update, layout: :layout
+end
+
+# update an existing pc
+post "/pcs/:id/update" do
+  pc_id = params[:id].to_i
+  pc_hash = convert_params_to_pc_hash
+
+  redirect "/pcs/#{pc_id}/update" unless validate_character_hash(pc_hash)
+
+  @storage.update_character(pc_hash, pc_id)
+  session[:success] = "#{pc_hash[:name]} has been updated!"
+  redirect "/pcs/#{pc_id}"
+end
+
 # display a single pc
 get "/pcs/:id" do
   pc_id = params[:id]
@@ -174,6 +287,33 @@ end
 get "/interactions" do
   @interactions = load_interaction_objects(@storage.retrieve_all_interactions)
   erb :interactions, layout: :layout
+end
+
+# display form to create new interaction
+get "/interactions/new" do
+  @characters = load_character_objects(@storage.retrieve_all_characters)
+
+  erb :interaction_new, layout: :layout
+end
+
+# create and add new interaction to database
+post "/interactions/new" do
+  interaction_hash = convert_params_to_interaction_hash
+  redirect "/interactions/new" unless validate_interactions_hash(interaction_hash)
+  create_new_interaction(interaction_hash)
+
+  redirect "/interactions"
+end
+
+# delete an interaction
+post "/interactions/:id/delete" do
+  interaction_id = params[:id]
+  delete_interaction(interaction_id)
+
+  confirm_interaction_deleted(interaction_id)
+
+  session[:success] = "Interaction successfully deleted."
+  redirect "/interactions"
 end
 
 # display a single interaction

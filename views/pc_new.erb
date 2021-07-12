@@ -1,0 +1,32 @@
+<h1>New PC</h1>
+<form method="post" action="/pcs/new" >
+  <label for="name">Name:</label>
+  <input id="name" name="name" type="text"><br>
+  <label for="picture_link">Picture Link:</label>
+  <input id="picture_link" name="picture_link" type="text"><br>
+  <label for="stat_block_name">Stat Block:</label>
+  <input id="stat_block_name" name="stat_block_name" type="text"><br>
+  <label for="stat_block_link">Stat Block Link:</label>
+  <input id="stat_block_link" name="stat_block_link" type="text"><br>
+  <label for="number">Main Location:</label>
+  <input type="number" id="main_location" name="main_location" min="1" max="9999"><br>
+  <label for="alignment">Alignment:</label>
+  <select name="alignment" id="alignment">
+    <option value="Lawful Good">Lawful Good</option>
+    <option value="Lawful Neutral">Lawful Neutral</option>
+    <option value="Lawful Evil">Lawful Evil</option>
+    <option value="Neutral Good">Neutral Good</option>
+    <option value="True Neutral">True Neutral</option>
+    <option value="Neutral Evil">Neutral Evil</option>
+    <option value="Chaotic Good">Chaotic Good</option>
+    <option value="Chaotic Neutral">Chaotic Neutral</option>
+    <option value="Chaotic Evil">Chaotic Evil</option>
+  </select><br>
+  <label for="ancestory">Ancestory:</label>
+  <input id="ancestory" name="ancestory" type="text"><br>
+  <label for="gender">Gender:</label>
+  <input id="gender" name="gender" type="text"><br>
+  <label for="short_description">Short Description:</label><br>
+  <textarea id="short_description" name="short_description" rows="5" cols="50">Enter description</textarea><br>
+  <input type="submit" value="Submit">
+</form>

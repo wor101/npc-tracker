@@ -1,0 +1,22 @@
+<h1>New Interaction</h1>
+<form method="post" action="/interactions/new" >
+  <label for="attitude">Attitude:</label>
+  <select name="attitude" id="attitude">
+    <option value="friendly">friendly</option>
+    <option value="indifferent">indifferent</option>
+    <option value="hostile">hostile</option>
+  </select><br>
+  <label for="date">Date:</label>
+  <input id="date" name="date" type="datetime-local"><br>
+  <label for="short_description">Short Description:</label><br>
+  <textarea id="short_description" name="short_description" rows="5" cols="50">Enter description</textarea><br>
+  <label for="full_description">Full Description:</label><br>
+  <textarea id="full_description" name="full_description" rows="20" cols="50">Enter description</textarea><br>
+  <label for="involved_characters">Involved Characters:</label><br>
+  <select name="involved_characters[]" id="involved_characters" multiple required>
+    <% @characters.each do |character| %>
+      <option value="<%= character.id %>"><%= character.name %></option>
+    <% end %>
+  </select><br>
+  <input type="submit" value="Submit">
+</form>
