@@ -1,6 +1,6 @@
 class NonPlayerCharacter
   attr_reader :id, :player_character, :name,
-                :picture_link, :stat_block_name,
+                :picture_link, :stat_block_name, :stat_block_link,
                 :main_location, :alignment, :ancestory,
                 :gender, :short_description
   
@@ -8,7 +8,8 @@ class NonPlayerCharacter
                   player_character, 
                   name, 
                   picture_link, 
-                  stat_block_name, 
+                  stat_block_name,
+                  stat_block_link, 
                   main_location, 
                   alignment, 
                   ancestory, 
@@ -18,6 +19,7 @@ class NonPlayerCharacter
       @player_character = player_character
       @name = name
       @stat_block_name = stat_block_name
+      @stat_block_link = stat_block_link
       @main_location = main_location
       @alignment = alignment
       @ancestory = ancestory

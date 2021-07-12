@@ -89,7 +89,36 @@ class DatabasePersistence
                 npc[:alignment],
                 npc[:ancestory],
                 npc[:gender],
-                npc[:short_description] )
+                npc[:short_description]
+          )
+  end
+
+  def update_npc(npc, npc_id)
+    sql = <<~SQL
+      UPDATE characters SET
+          name = $1,
+          picture_link = $2,
+          stat_block_name = $3,
+          stat_block_link = $4,
+          main_location = $5,
+          alignment = $6,
+          ancestory = $7,
+          gender = $8,
+          short_description = $9
+        WHERE id = $10
+    SQL
+
+    query(sql, npc[:name],
+               npc[:picture_link],
+               npc[:stat_block_name],
+               npc[:stat_block_link],
+               npc[:main_location],
+               npc[:alignment],
+               npc[:ancestory],
+               npc[:gender],
+               npc[:short_description],
+               npc_id.to_i
+          )
   end
 
   def delete_npc(id)

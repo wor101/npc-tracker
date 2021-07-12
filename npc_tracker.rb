@@ -34,6 +34,7 @@ helpers do
                               character_hash[:name],
                               character_hash[:picture_link],
                               character_hash[:stat_block_name],
+                              character_hash[:stat_block_link],
                               character_hash[:main_location],
                               character_hash[:alignment],
                               character_hash[:ancestory],
@@ -66,6 +67,27 @@ helpers do
   def delete_npc(npc_id)
     @storage.delete_npc(npc_id)
   end
+
+  def validate_npc_details(npc_hash)
+    if npc_hash[:name].empty? 
+      session[:error] = "NPC must be assigned a valid name."
+      false
+    else
+      true
+    end
+  end
+
+  def convert_params_to_npc_hash
+    { name: params[:name].strip,
+    picture_link: params[:picture_link],
+    stat_block_name: params[:stat_block_name].strip,
+    stat_block_link: params[:stat_block_link],
+    main_location: params[:main_location].to_i,
+    alignment: params[:alignment],
+    ancestory: params[:ancestory].strip,
+    gender: params[:gender].strip,
+    short_description: params[:short_description].strip }
+  end
 end
 
 # home page
@@ -88,15 +110,9 @@ end
 
 # submit and create a new pc
 post "/npcs/new" do
-  npc_hash = { name: params[:name],
-    picture_link: params[:picture_link],
-    stat_block_name: params[:stat_block_name],
-    stat_block_link: params[:stat_block_link],
-    main_location: params[:main_location],
-    alignment: params[:alignment],
-    ancestory: params[:ancestory],
-    short_description: params[:short_description] }
+  npc_hash = convert_params_to_npc_hash
 
+  redirect "/npcs/new" unless validate_npc_details(npc_hash)
   create_new_npc(npc_hash)
 
   redirect "/npcs"
@@ -111,9 +127,26 @@ post "/npcs/:id/delete" do
   redirect "/npcs"
 end
 
+# display form to update an npc
+get "/npcs/:id/update" do
+  npc_id = params[:id]
+  @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
+
+  erb :npc_update, layout: :layout
+end
+
+# update an existing npc
+post "/npcs/:id/update" do
+  npc_id = params[:id].to_i
+  npc_hash = convert_params_to_npc_hash
+
+  @storage.update_npc(npc_hash, npc_id)
+  redirect "/npcs/#{npc_id}"
+end
+
 # display a single npc
 get "/npcs/:id" do
-  npc_id = params[:id]
+  npc_id = params[:id].to_i
   @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
   @npc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(npc_id))
 
