@@ -140,6 +140,7 @@ post "/npcs/:id/update" do
   npc_id = params[:id].to_i
   npc_hash = convert_params_to_npc_hash
 
+  binding.pry
   @storage.update_npc(npc_hash, npc_id)
   redirect "/npcs/#{npc_id}"
 end

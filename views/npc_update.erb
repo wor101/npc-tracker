@@ -1,5 +1,5 @@
 <h1>Update NPC</h1>
-<form method="post" action="/npcs/:id/update" >
+<form method="post" action="/npcs/<%= @npc.id %>/update" >
   <label for="name">Name:</label>
   <input id="name" name="name" type="text" value="<%= @npc.name %>"><br>
   <label for="picture_link">Picture Link:</label>
