@@ -15,7 +15,7 @@ CREATE TABLE characters (
 CREATE TABLE characters_interactions (
   id serial PRIMARY KEY,
   character_id integer NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-  interaction_id integer NOT NULL REFERENCES interactions(id)
+  interaction_id integer NOT NULL REFERENCES interactions(id) ON DELETE CASCADE
 );
 
 CREATE TABLE interactions (
@@ -25,28 +25,3 @@ CREATE TABLE interactions (
   short_description varchar(250) NOT NULL,
   full_description text
 );
-
-CREATE TABLE npc_details (
-id serial PRIMARY KEY,
-character_id integer NOT NULL REFERENCES characters(id) DELETE ON CASCADE,
-occupation_history text,
-appearance text,
-abilities text,
-talent text,
-mannerisms text,
-useful_knowledge text,
-ideal text,
-bond text,
-flaw_secret text
-);
-
-CREATE TABLE player_character_details (
-  id serial PRIMARY KEY,
-  character_id integer NOT NULL REFERENCES characters(id) DELETE ON CASCADE,
-  player_name text,
-  character_class text,
-  character_subclass text,
-  character_level integer,
-)
-
-

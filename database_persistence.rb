@@ -1,9 +1,12 @@
 require "pg"
+require "pry"
 
 class DatabasePersistence
   def initialize(logger)
-    @db = if Sinatra::Base.production?
+    @db = if Sinatra::Base.production? 
             PG.connect(ENV['DATABASE_URL'])
+          elsif ENV['RACK_ENV'] == 'test'
+            PG.connect(dbname: "npc_tracker_test")
           else
             PG.connect(dbname: "npc_tracker")
           end
