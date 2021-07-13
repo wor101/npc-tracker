@@ -238,7 +238,7 @@ get "/npcs/:id" do
 
     erb :npc, layout: :layout
   else
-    session[:error] = "NPC id #{npc_id} does note exist"
+    session[:error] = "NPC id #{npc_id} does not exist"
     redirect '/npcs'
   end
 end

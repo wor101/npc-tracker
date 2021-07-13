@@ -142,6 +142,15 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'Voitto Markku')
   end
 
+  def test_npc_does_not_exist
+    get '/npcs/99'
+    assert_equal("NPC id 99 does not exist", session[:error])
+    assert_equal(302, last_response.status)
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+  end
+
   def test_new_npc
     post '/npcs/new', npc_jani_ahokas_hash
     assert_equal(302, last_response.status)
@@ -227,6 +236,15 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'Name: Durrakos')
   end
 
+  def test_pc_does_not_exist
+    get '/pcs/99'
+    assert_equal("PC id 99 does not exist", session[:error])
+    assert_equal(302, last_response.status)
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+  end
+
   def test_interactions
     get '/interactions'
     assert_equal(200, last_response.status)
@@ -243,6 +261,15 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'Almina Mastonen')
     assert_includes(last_response.body, 'Voitto Markku')
   end 
+
+  def test_interaction_does_not_exist
+    get '/interactions/99'
+    assert_equal("Interaction id 99 does not exist", session[:error])
+    assert_equal(302, last_response.status)
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+  end
 
   def test_new_interaction
     post '/interactions/new', interaction_heartless_heroics_hash
