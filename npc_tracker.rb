@@ -197,6 +197,15 @@ helpers do
       false
     end
   end
+
+  def valid_credentials?(username, password)
+    user_details = @storage.retrieve_user_details(username)
+
+    return false if user_details == nil
+  
+    bcrypt_password = BCrypt::Password.new(user_details[:password])
+    bcrypt_password == password
+  end
   
   def create_pending_user(username, password, email)
     @storage.add_pending_user(username, password, email)
@@ -206,7 +215,6 @@ end
 
 # home page
 get "/" do  
-
   redirect_to_login unless signed_in?
   erb :home
 end
@@ -215,23 +223,6 @@ end
 get "/login" do
 
   erb :login, layout: :layout
-end
-
-def valid_credentials?(username, password)
-  user_details = @storage.retrieve_user_details(username)
-  return false if user_details.empty?
-
-  bcrypt_password = BCrypt::Password.new(user_details[:password])
-  bcrypt_password == password
-
-  # users = load_users
-
-  # if users.keys.include?(username)
-  #   bcrypt_password = BCrypt::Password.new(users[username])
-  #   bcrypt_password == password
-  # else
-  #   false
-  # end
 end
 
 # submit login request
@@ -246,8 +237,17 @@ post "/login" do
     session[:temp_user] = params[:username]
     session[:error] = 'Invalid Credentials'
     status 422
-    erb :signin
+
+    erb :login
   end
+end
+
+# submit logout request
+post '/logout' do
+  session[:signed_in] = false
+  session[:username] = nil
+  session[:success] = "User has logged out"
+  redirect '/login'
 end
 
 # display new user form

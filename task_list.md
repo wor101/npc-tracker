@@ -5,6 +5,11 @@
 6. add error handling / bad urls redirect
 7. add guest and admin login with passwords 
 8. change some methods to private
+9. need to test admin_rights?
+10. implement admin page for approving and updating rights
+11. implement read only version
+12. update test database and test.rb for user login and rights
+
 
 Feedback Requests
 1. How to best implement test for SQL apps
