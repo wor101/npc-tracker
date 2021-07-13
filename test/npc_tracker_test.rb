@@ -52,6 +52,10 @@ class NPCTrackerTest < MiniTest::Test
     last_request.env["rack.session"]
   end
 
+  def admin_session
+    { "rack.session" => { username: "admin" } }
+  end
+
   def npc_jani_ahokas_hash
     { name: 'Jani Ahokas',
     player_character: false,
@@ -121,7 +125,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_home
-    get '/'
+    get '/', {}, admin_session
     assert_equal(200, last_response.status)
   end
 
