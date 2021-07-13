@@ -1,4 +1,4 @@
-class NonPlayerCharacter
+class Character
   attr_reader :id, :player_character, :name,
                 :picture_link, :stat_block_name, :stat_block_link,
                 :main_location, :alignment, :ancestory,

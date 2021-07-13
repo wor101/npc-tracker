@@ -29,7 +29,7 @@ end
 helpers do
   def load_character_objects(array_of_character_hashes)
     array_of_character_hashes.map do |character_hash|
-      NonPlayerCharacter.new( character_hash[:id].to_i, 
+      Character.new( character_hash[:id].to_i, 
                               character_hash[:player_character],
                               character_hash[:name],
                               character_hash[:picture_link],
