@@ -208,7 +208,12 @@ get "/npcs/:id/update" do
   npc_id = params[:id]
   @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
 
-  erb :npc_update, layout: :layout
+  if @npc
+    erb :npc_update, layout: :layout
+  else
+    session[:error] = "NPC id #{npc_id} does not exist"
+    redirect '/npcs'
+  end
 end
 
 # update an existing npc
@@ -227,9 +232,15 @@ end
 get "/npcs/:id" do
   npc_id = params[:id].to_i
   @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
-  @npc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(npc_id))
+  
+  if @npc
+    @npc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(npc_id))
 
-  erb :npc, layout: :layout
+    erb :npc, layout: :layout
+  else
+    session[:error] = "NPC id #{npc_id} does note exist"
+    redirect '/npcs'
+  end
 end
 
 # list all pcs
@@ -271,7 +282,12 @@ get "/pcs/:id/update" do
   pc_id = params[:id]
   @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first
 
-  erb :pc_update, layout: :layout
+  if @pc
+    erb :pc_update, layout: :layout
+  else
+    session[:error] = "PC id #{pc_id} does not exist"
+    redirect '/pcs'
+  end
 end
 
 # update an existing pc
@@ -290,9 +306,15 @@ end
 get "/pcs/:id" do
   pc_id = params[:id]
   @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first
-  @pc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(pc_id))
 
-  erb :pc, layout: :layout
+  if @pc
+    @pc_interactions = load_interaction_objects(@storage.retrieve_single_character_interactions(pc_id))
+
+    erb :pc, layout: :layout
+  else
+    session[:error] = "PC id #{pc_id} does not exist"
+    redirect '/pcs'
+  end
 end
 
 # list all interactions
@@ -330,15 +352,20 @@ end
 
 # display form to update an interaction
 get "/interactions/:id/update" do
-interaction_id = params[:id]
-@interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
-involved_characters = load_interaction_involved_character_objects(interaction_id)
-@involved_character_ids = involved_characters.map { |character| character.id }
+  interaction_id = params[:id]
+  @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
 
-#binding.pry
-@characters = load_character_objects(@storage.retrieve_all_characters)
+  if @interaction
+    involved_characters = load_interaction_involved_character_objects(interaction_id)
+    @involved_character_ids = involved_characters.map { |character| character.id }
 
-erb :interaction_update, layout: :layout
+    @characters = load_character_objects(@storage.retrieve_all_characters)
+
+    erb :interaction_update, layout: :layout
+  else
+    session[:error] = "Interaction id #{interaction_id} does not exist"
+    redirect '/interactions'
+  end
 end
 
 # update an existing interaction
@@ -359,9 +386,15 @@ end
 get "/interactions/:id" do
   interaction_id = params[:id].to_i
   @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
-  # need to implement retrieve_single_interaction_characters(id) in database_persistence
-  @interaction_npcs = load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
-  erb :interaction, layout: :layout
+
+  if @interaction
+    @interaction_npcs = load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
+
+    erb :interaction, layout: :layout
+  else
+    session[:error] = "Interaction id #{interaction_id} does not exist"
+    redirect '/interactions'
+  end
 end
 
 
