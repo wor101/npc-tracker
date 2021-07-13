@@ -7,6 +7,7 @@ gem "erubis"
 gem "rack-test"
 gem "minitest"
 gem "rake"
+gem "bcrypt"
 
 gem "pg"
 

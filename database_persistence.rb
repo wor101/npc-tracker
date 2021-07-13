@@ -85,6 +85,40 @@ class DatabasePersistence
     result.first["id"].to_i
   end
 
+  def retrieve_usernames
+    sql = "SELECT username FROM users"
+    result = query(sql)
+    result.map { |tuple| tuple["username"] }
+   end
+
+  def add_pending_user(username, password, email)
+    sql = <<~SQL
+      INSERT INTO users (username, password, email) 
+      VALUES ($1, $2, $3)
+    SQL
+    query(sql, username, password, email)
+  end
+
+  def retrieve_user_status(username) 
+    sql = "SELECT status FROM users WHERE username = $1"
+    result = query(sql, username)
+    result.map { |tuple| tuple["status"] }.first
+  end
+
+  def retrieve_user_details(username)
+    sql = "SELECT * FROM users WHERE username = $1"
+    result = query(sql, username)
+    array_with_user_hash = result.map do |tuple|
+                  { id: tuple["id"],
+                    username: tuple["username"],
+                    password: tuple["password"],
+                    email: tuple["email"],
+                    status: tuple["status"]
+                  }
+                end
+    array_with_user_hash.first
+  end
+
   def add_new_character(character)
     sql = <<~SQL
       INSERT INTO characters (name,

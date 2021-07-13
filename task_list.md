@@ -4,6 +4,7 @@
 4. add java script confirmation for delete button
 6. add error handling / bad urls redirect
 7. add guest and admin login with passwords 
+8. change some methods to private
 
 Feedback Requests
 1. How to best implement test for SQL apps

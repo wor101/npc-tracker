@@ -12,16 +12,24 @@ CREATE TABLE characters (
   short_description text
 );
 
-CREATE TABLE characters_interactions (
-  id serial PRIMARY KEY,
-  character_id integer NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-  interaction_id integer NOT NULL REFERENCES interactions(id) ON DELETE CASCADE
-);
-
 CREATE TABLE interactions (
   id serial PRIMARY KEY,
   attitude varchar(25) CHECK (attitude IN ('friendly', 'indifferent', 'hostile')),
   date timestamp DEFAULT CURRENT_TIMESTAMP,
   short_description varchar(250) NOT NULL,
   full_description text
+);
+
+CREATE TABLE characters_interactions (
+  id serial PRIMARY KEY,
+  character_id integer NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  interaction_id integer NOT NULL REFERENCES interactions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE users (
+  id serial PRIMARY KEY,
+  username varchar(50) UNIQUE NOT NULL,
+  password text NOT NULL,
+  email text,
+  status text NOT NULL DEFAULT 'pending' CHECK IN ('pending', 'user', 'admin')
 );

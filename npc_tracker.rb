@@ -2,6 +2,7 @@ require "sinatra"
 require "sinatra/content_for"
 require "tilt/erubis"
 require "pry"
+require 'bcrypt'
 
 require_relative "database_persistence"
 require_relative "class_objects"
@@ -162,11 +163,109 @@ helpers do
       full_description: params["full_description"],
       involved_characters: params["involved_characters"]}
   end
+
+  def signed_in?
+    session[:username] == nil ? false : true
+  end
+  
+  def admin_rights?
+    username = session[:username]
+    user_status = @storage.retrieve_user_status(username) 
+    user_status == "admin"
+  end
+  
+  def redirect_to_login
+    session[:error] = 'You must be signed in to do that.'
+    redirect '/login'
+  end
+
+  def valid_username?(username)
+    existing_usernames = @storage.retrieve_usernames
+    if existing_usernames.include?(username) 
+      session[:error] = "Username #{username} already exists"
+      false
+    else
+      true
+    end
+  end
+  
+  def valid_password?(password1, password2)
+    if password1 == password2
+      true
+    else
+      session[:error] = 'Both passwords must match.'
+      false
+    end
+  end
+  
+  def create_pending_user(username, password, email)
+    @storage.add_pending_user(username, password, email)
+  end
+
 end
 
 # home page
 get "/" do  
+
+  redirect_to_login unless signed_in?
   erb :home
+end
+
+# display login page
+get "/login" do
+
+  erb :login, layout: :layout
+end
+
+def valid_credentials?(username, password)
+  user_details = @storage.retrieve_user_details(username)
+  return false if user_details.empty?
+
+  bcrypt_password = BCrypt::Password.new(user_details[:password])
+  bcrypt_password == password
+
+  # users = load_users
+
+  # if users.keys.include?(username)
+  #   bcrypt_password = BCrypt::Password.new(users[username])
+  #   bcrypt_password == password
+  # else
+  #   false
+  # end
+end
+
+# submit login request
+post "/login" do
+  if valid_credentials?(params[:username], params[:password])
+    session[:username] = params[:username]
+    session[:signed_in] = true
+
+    session[:success] = "Welcome #{session[:username]}!"
+    redirect '/'
+  else
+    session[:temp_user] = params[:username]
+    session[:error] = 'Invalid Credentials'
+    status 422
+    erb :signin
+  end
+end
+
+# display new user form
+get "/new_user" do
+
+  erb :new_user, layout: :layout
+end
+
+# create and add new user to database
+post "/new_user" do
+  username = params[:username]
+  redirect '/new_user' unless valid_username?(username)
+  redirect '/new_user' unless valid_password?(params[:password], params[:password_match])
+
+  bcrypt_password = BCrypt::Password.create(params[:password])
+  create_pending_user(username, bcrypt_password, params[:email])
+
+  redirect '/login'
 end
 
 # list all npcs
