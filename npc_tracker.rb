@@ -195,6 +195,11 @@ helpers do
     redirect '/login'
   end
 
+  def redirect_no_admin_rights
+    session[:error] = "You must have admin rights to perform that action"
+    redirect "/"
+  end
+
   def valid_username?(username)
     existing_usernames = @storage.retrieve_usernames
     if existing_usernames.include?(username) 
@@ -280,52 +285,61 @@ post "/new_user" do
 
   bcrypt_password = BCrypt::Password.create(params[:password])
   create_pending_user(username, bcrypt_password, params[:email])
+  session[:success] = "User #{username} has been created!"
 
   redirect '/login'
 end
 
 # display all users (admin only)
 get "/users" do
-  redirect "/" unless admin_rights?
-
-  @users = load_user_objects(@storage.retrieve_all_user_details_minus_password)
-  
-  erb :users, layout: :layout
+  if admin_rights?
+    @users = load_user_objects(@storage.retrieve_all_user_details_minus_password)
+    
+    erb :users, layout: :layout
+  else
+    redirect_no_admin_rights
+  end
 end
 
 # approve and update user status to user
 post "/users/:id/approve" do
-  redirect "/" unless admin_rights?
+  if admin_rights?
+    user_id = params[:id].to_i
 
-  user_id = params[:id].to_i
+    @storage.update_user_status_to_user(user_id)
 
-  @storage.update_user_status_to_user(user_id)
-
-  session[:success] = "User approved and granted user status"
-  redirect "/users"
+    session[:success] = "User approved and granted user status"
+    redirect "/users"
+  else
+    redirect_no_admin_rights
+  end
 end
 
 # make a current user with 'user' status an admin
 post "/users/:id/admin" do
-  redirect "/" unless admin_rights?
+  if admin_rights?
+    user_id = params[:id].to_i
 
-  user_id = params[:id].to_i
+    @storage.update_user_status_to_admin(user_id)
 
-  @storage.update_user_status_to_admin(user_id)
-
-  redirect "/users"
+    redirect "/users"
+  else
+    redirect_no_admin_rights
+  end
 end
 
 # reject and remove user from database
 post "/users/:id/reject" do
-  redirect "/" unless admin_rights?
+  if admin_rights?
+    user_id = params[:id].to_i
 
-  user_id = params[:id].to_i
+    @storage.remove_user_from_database(user_id)
 
-  @storage.remove_user_from_database(user_id)
-
-  session[:success] = "User removed from database"
-  redirect "/users"
+    session[:success] = "User removed from database"
+    redirect "/users"
+  else
+    redirect_no_admin_rights
+  end
 end
 
 # list all npcs
@@ -337,62 +351,77 @@ end
 
 # display form to create a new npc
 get "/npcs/new" do
-  redirect "/npcs" unless user_rights?
-
-  erb :npc_new, layout: :layout
+  if user_rights?
+    erb :npc_new, layout: :layout
+  else
+    session[:error] = "You must have user rights to create a new NPC"
+    redirect "/npcs"
+  end
 end
 
 # create a new npc in the database
 post "/npcs/new" do
-  redirect "/npcs" unless user_rights?
+  if user_rights?
+    npc_hash = convert_params_to_npc_hash
 
-  npc_hash = convert_params_to_npc_hash
-
-  redirect "/npcs/new" unless validate_character_hash(npc_hash)
-  create_new_character(npc_hash)
+    redirect "/npcs/new" unless validate_character_hash(npc_hash)
+    create_new_character(npc_hash)
+  else
+    session[:error] = "You must have user rights to create a new NPC"
+  end
 
   redirect "/npcs"
 end
 
 # delete an npc from the database
 post "/npcs/:id/delete" do
-  redirect "/npcs" unless user_rights?
+  if user_rights?
+    npc_id = params[:id]
+    delete_character(npc_id)
 
-  npc_id = params[:id]
-  delete_character(npc_id)
+    confirm_character_deleted(npc_id)
 
-  confirm_character_deleted(npc_id)
-
-  session[:success] = "NPC successfully deleted."
+    session[:success] = "NPC successfully deleted."
+  else
+    session[:error] = "You must have user rights to delete an npc"
+  end
   redirect "/npcs"
 end
 
 # display form to update an npc
 get "/npcs/:id/update" do
-  redirect "/npcs" unless user_rights?
-
   npc_id = params[:id]
-  @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
 
-  if @npc
-    erb :npc_update, layout: :layout
+  if user_rights?
+    @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
+
+    if @npc
+      erb :npc_update, layout: :layout
+    else
+      session[:error] = "NPC id #{npc_id} does not exist"
+      redirect '/npcs'
+    end
   else
-    session[:error] = "NPC id #{npc_id} does not exist"
-    redirect '/npcs'
+    session[:error] = "You must have user rights to update an NPC"
+    redirect "/npcs/#{npc_id}"
   end
 end
 
 # update an existing npc
 post "/npcs/:id/update" do
-  redirect "/npcs" unless user_rights?
-
   npc_id = params[:id].to_i
-  npc_hash = convert_params_to_npc_hash
 
-  redirect "/npcs/#{npc_id}/update" unless validate_character_hash(npc_hash)
+  if user_rights?
+    npc_hash = convert_params_to_npc_hash
 
-  @storage.update_character(npc_hash, npc_id)
-  session[:success] = "#{npc_hash[:name]} has been updated!"
+    redirect "/npcs/#{npc_id}/update" unless validate_character_hash(npc_hash)
+
+    @storage.update_character(npc_hash, npc_id)
+    session[:success] = "#{npc_hash[:name]} has been updated!"
+  else
+    session[:error] = "You must have user rights to update an NPC"
+  end
+
   redirect "/npcs/#{npc_id}"
 end
 
@@ -420,62 +449,78 @@ end
 
 # display form to create a new pc
 get "/pcs/new" do
-  redirect "/pcs" unless user_rights?
-
-  erb :pc_new, layout: :layout
+  if user_rights?
+    erb :pc_new, layout: :layout
+  else
+    session[:error] = "You must have user rights to create a new PC"
+    redirect "/pcs"
+  end
 end
 
 # create a new pc in the database
 post "/pcs/new" do
-  redirect "/pcs" unless user_rights?
+  if user_rights?
+    pc_hash = convert_params_to_pc_hash
 
-  pc_hash = convert_params_to_pc_hash
-
-  redirect "/pcs/new" unless validate_character_hash(pc_hash)
-  create_new_character(pc_hash)
+    redirect "/pcs/new" unless validate_character_hash(pc_hash)
+    create_new_character(pc_hash)
+  else
+    session[:error] = "You must have user rights to create a new PC"
+  end
 
   redirect "/pcs"
 end
 
 # delete an pc from the database
 post "/pcs/:id/delete" do
-  redirect "/pcs" unless user_rights?
-
   pc_id = params[:id]
-  delete_character(pc_id)
 
-  confirm_character_deleted(pc_id)
+  if user_rights?
+    delete_character(pc_id)
 
-  session[:success] = "PC successfully deleted."
-  redirect "/pcs"
+    confirm_character_deleted(pc_id)
+
+    session[:success] = "PC successfully deleted."
+    redirect "/pcs"
+  else
+    session[:error] = "You must have user rights to delete a PC"
+  end
+  redirect "/pcs/#{pc_id}"
 end
 
 # display form to update a pc
 get "/pcs/:id/update" do
-  redirect "/pcs" unless user_rights?
-
   pc_id = params[:id]
-  @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first
 
-  if @pc
-    erb :pc_update, layout: :layout
+  if user_rights?
+    @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first
+
+    if @pc
+      erb :pc_update, layout: :layout
+    else
+      session[:error] = "PC id #{pc_id} does not exist"
+      redirect '/pcs'
+    end
   else
-    session[:error] = "PC id #{pc_id} does not exist"
-    redirect '/pcs'
+    session[:error] = "You must have user rights to update a PC"
+    redirect "/pcs/#{pc_id}"
   end
 end
 
 # update an existing pc
 post "/pcs/:id/update" do
-  redirect "/pcs" unless user_rights?
-
   pc_id = params[:id].to_i
-  pc_hash = convert_params_to_pc_hash
 
-  redirect "/pcs/#{pc_id}/update" unless validate_character_hash(pc_hash)
+  if user_rights?
+    pc_hash = convert_params_to_pc_hash
 
-  @storage.update_character(pc_hash, pc_id)
-  session[:success] = "#{pc_hash[:name]} has been updated!"
+    redirect "/pcs/#{pc_id}/update" unless validate_character_hash(pc_hash)
+
+    @storage.update_character(pc_hash, pc_id)
+    session[:success] = "#{pc_hash[:name]} has been updated!"
+  else
+    session[:error] = "You must have user rights to update a PC"
+  end
   redirect "/pcs/#{pc_id}"
 end
 
@@ -502,70 +547,87 @@ end
 
 # display form to create new interaction
 get "/interactions/new" do
-  redirect "/interactions" unless user_rights?
+  if user_rights?
+    @characters = load_character_objects(@storage.retrieve_all_characters)
 
-  @characters = load_character_objects(@storage.retrieve_all_characters)
-
-  erb :interaction_new, layout: :layout
+    erb :interaction_new, layout: :layout
+  else
+    session[:error] = "You must have user rights to create a new interaction"
+    redirect "/interactions"
+  end
 end
 
 # create and add new interaction to database
 post "/interactions/new" do
-  redirect "/interactions" unless user_rights?
-
-  interaction_hash = convert_params_to_interaction_hash
-  redirect "/interactions/new" unless validate_interactions_hash(interaction_hash)
-  create_new_interaction(interaction_hash)
-
+  if user_rights?
+    interaction_hash = convert_params_to_interaction_hash
+    redirect "/interactions/new" unless validate_interactions_hash(interaction_hash)
+    create_new_interaction(interaction_hash)
+    session[:success] = "New interaction created"
+  else
+    session[:error] = "You must have user permission to create a new interaction"
+  end
   redirect "/interactions"
 end
 
 # delete an interaction
 post "/interactions/:id/delete" do
-  redirect "/interactions" unless user_rights?
-
   interaction_id = params[:id]
-  delete_interaction(interaction_id)
 
-  confirm_interaction_deleted(interaction_id)
+  if user_rights?
+    delete_interaction(interaction_id)
 
-  session[:success] = "Interaction successfully deleted."
-  redirect "/interactions"
+    confirm_interaction_deleted(interaction_id)
+
+    session[:success] = "Interaction successfully deleted."
+    redirect "/interactions"
+  else
+    session[:error] = "You must have user rights to delete an interaction"
+    redirect "/interactions/#{interaction_id}"
+  end
 end
 
 # display form to update an interaction
 get "/interactions/:id/update" do
-  redirect "/interactions" unless user_rights?
-
   interaction_id = params[:id]
-  @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
 
-  if @interaction
-    involved_characters = load_interaction_involved_character_objects(interaction_id)
-    @involved_character_ids = involved_characters.map { |character| character.id }
+  if user_rights?
+    @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
 
-    @characters = load_character_objects(@storage.retrieve_all_characters)
+    if @interaction
+      involved_characters = load_interaction_involved_character_objects(interaction_id)
+      @involved_character_ids = involved_characters.map { |character| character.id }
 
-    erb :interaction_update, layout: :layout
+      @characters = load_character_objects(@storage.retrieve_all_characters)
+
+      erb :interaction_update, layout: :layout
+    else
+      session[:error] = "Interaction id #{interaction_id} does not exist"
+      redirect '/interactions'
+    end
   else
-    session[:error] = "Interaction id #{interaction_id} does not exist"
-    redirect '/interactions'
+    session[:error] = "You must have user rights to update an interaction"
+    redirect "/interactions/#{interaction_id}"
   end
 end
 
 # update an existing interaction
 post "/interactions/:id/update" do
-  redirect "/interactions" unless user_rights?
-
   interaction_id = params[:id].to_i
-  interaction_hash = convert_params_to_interaction_hash
-  involved_character_ids = params[:involved_characters]
 
-  redirect "/interactions/#{interaction_id}/update" unless validate_interactions_hash(interaction_hash)
+  if user_rights?
+    interaction_hash = convert_params_to_interaction_hash
+    involved_character_ids = params[:involved_characters]
 
-  update_interaction(interaction_hash, interaction_id, involved_character_ids)
+    redirect "/interactions/#{interaction_id}/update" unless validate_interactions_hash(interaction_hash)
 
-  session[:success] = "#{interaction_hash[:short_description]} has been updated!"
+    update_interaction(interaction_hash, interaction_id, involved_character_ids)
+
+    session[:success] = "#{interaction_hash[:short_description]} has been updated!"
+  else
+    session[:error] = "You must have user rights to update an interaction"
+  end
+
   redirect "/interactions/#{interaction_id}"
 end
 

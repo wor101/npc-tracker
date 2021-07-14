@@ -29,6 +29,7 @@ class NPCTrackerTest < MiniTest::Test
     db.exec("ALTER SEQUENCE characters_id_seq RESTART WITH 1;")
     db.exec("ALTER SEQUENCE interactions_id_seq RESTART WITH 1;")
     db.exec("ALTER SEQUENCE characters_interactions_id_seq RESTART WITH 1;")
+    db.exec("ALTER SEQUENCE users_id_seq RESTART WITH 1;")
   end
 
   def load_table_data(db)
@@ -40,12 +41,16 @@ class NPCTrackerTest < MiniTest::Test
 
     characters_interactions_data = File.open('./test/characters_interactions_data.sql', 'rb') { |file| file.read }
     db.exec(characters_interactions_data)
+
+    users_data = File.open('./test/users_data.sql', 'rb') { |file| file.read }
+    db.exec(users_data)
   end
 
   def delete_table_data(db)
     db.exec("DELETE FROM characters;")
     db.exec("DELETE FROM interactions;")
     db.exec("DELETE FROM characters_interactions;")
+    db.exec("DELETE FROM users;")
   end
 
   def session
@@ -54,6 +59,10 @@ class NPCTrackerTest < MiniTest::Test
 
   def admin_session
     { "rack.session" => { username: "admin" } }
+  end
+
+  def user_session
+    { "rack.session" => { username: "normal_user"} }
   end
 
   def npc_jani_ahokas_hash
@@ -156,7 +165,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_new_npc
-    post '/npcs/new', npc_jani_ahokas_hash
+    post '/npcs/new', npc_jani_ahokas_hash, user_session
     assert_equal(302, last_response.status)
 
     get last_response["Location"]
@@ -170,7 +179,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_update_npc
-    post 'npcs/1/update', npc_allmina_hash
+    post 'npcs/1/update', npc_allmina_hash, user_session
     assert_equal(302, last_response.status)
 
     get last_response["Location"]
@@ -179,8 +188,16 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'Leader of the black cats. Server at the East Gate Inn.')
   end
 
+  def test_update_npc_without_permission
+    post 'npcs/1/update', npc_allmina_hash
+    assert_equal(302, last_response.status)
+    
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+  end
+
   def test_delete_npc
-    post '/npcs/1/delete'
+    post '/npcs/1/delete', {}, user_session
     assert_equal(302, last_response.status)
     assert_equal(session[:success], 'NPC successfully deleted.')
     
@@ -199,7 +216,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_new_pc
-    post '/pcs/new', pc_theondondandolis_hash
+    post '/pcs/new', pc_theondondandolis_hash, user_session
     assert_equal(302, last_response.status)
 
     get last_response["Location"]
@@ -213,7 +230,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_update_pc 
-    post 'pcs/1/update', pc_celestria_hash
+    post 'pcs/1/update', pc_celestria_hash, user_session
     assert_equal(302, last_response.status)
 
     get last_response["Location"]
@@ -223,7 +240,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_delete_pc
-    post '/pcs/16/delete'
+    post '/pcs/16/delete', {}, user_session
     assert_equal(302, last_response.status)
     assert_equal('PC successfully deleted.', session[:success])
 
@@ -276,7 +293,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_new_interaction
-    post '/interactions/new', interaction_heartless_heroics_hash
+    post '/interactions/new', interaction_heartless_heroics_hash, user_session
     assert_equal(302, last_response.status)
 
     get last_response["Location"]
@@ -297,7 +314,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_update_interaction
-    post 'interactions/1/update', interaction_deadly_rivalry_hash
+    post 'interactions/1/update', interaction_deadly_rivalry_hash, user_session
     assert_equal(302, last_response.status)
 
     get last_response["Location"]
@@ -310,7 +327,7 @@ class NPCTrackerTest < MiniTest::Test
   end
 
   def test_delete_interaction
-    post '/interactions/4/delete'
+    post '/interactions/4/delete', {}, user_session
     assert_equal(302, last_response.status)
     assert_equal('Interaction successfully deleted.', session[:success])
 

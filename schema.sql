@@ -31,5 +31,5 @@ CREATE TABLE users (
   username varchar(50) UNIQUE NOT NULL,
   password text NOT NULL,
   email text,
-  status text NOT NULL DEFAULT 'pending' CHECK IN ('pending', 'user', 'admin')
+  status text NOT NULL CHECK (status IN ('pending', 'user', 'admin')) DEFAULT 'pending' 
 );
