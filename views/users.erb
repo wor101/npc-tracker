@@ -1,0 +1,24 @@
+<h1>Users</h1>
+<p>Current User: <%= session[:username] %></p>
+<ul>
+  <% @users.each do |user| %>
+    <li>
+      <%= user.id + ": " + user.username + " - " + user.email + " [" + user.status + "]" %>
+      <% if user.status == "pending" %>
+        <form method="post" action="/users/<%= user.id %>/approve">
+          <input type="submit" value="Approve">
+        </form>
+      <% end %>
+      <% if user.username != "admin" %>
+        <form method="post" action="/users/<%= user.id %>/reject">
+          <input type="submit" value="Reject">
+        </form>
+        <% if user.status == "user" %>
+          <form method="post" action="/users/<%= user.id %>/admin">
+            <input type="submit" value="Make Admin">
+          </form>
+        <% end %>
+      <% end %>
+    </li><br>
+  <% end %>
+</ul>

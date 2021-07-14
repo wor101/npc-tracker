@@ -45,8 +45,13 @@ class Interaction
   end
 end
 
-# Interaction.new( interaction_hash[:id],
-# interaction_hash[:attitude],
-# interaction_hash[:date],
-# interaction_hash[:short_description],
-# interaction_hash[:full_description] 
+class User
+  attr_reader :id, :username, :email, :status
+
+  def initialize(id, username, email, status)
+    @id = id
+    @username = username
+    @email = email
+    @status = status
+  end
+end

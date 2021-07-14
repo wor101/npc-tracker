@@ -9,6 +9,7 @@
 10. implement admin page for approving and updating rights
 11. implement read only version
 12. update test database and test.rb for user login and rights
+13. Fix autoselect for alignment when updating PC and NPC
 
 
 Feedback Requests

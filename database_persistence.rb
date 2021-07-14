@@ -109,14 +109,41 @@ class DatabasePersistence
     sql = "SELECT * FROM users WHERE username = $1"
     result = query(sql, username)
     array_with_user_hash = result.map do |tuple|
-                  { id: tuple["id"],
-                    username: tuple["username"],
-                    password: tuple["password"],
-                    email: tuple["email"],
-                    status: tuple["status"]
-                  }
-                end
+                            { id: tuple["id"],
+                              username: tuple["username"],
+                              password: tuple["password"],
+                              email: tuple["email"],
+                              status: tuple["status"]
+                            }
+                          end
     array_with_user_hash.first
+  end
+
+  def retrieve_all_user_details_minus_password
+    sql = "SELECT id, username, email, status FROM users"
+    result = query(sql)
+    array_with_hashes_of_users = result.map do |tuple|
+                                   { id: tuple["id"],
+                                     username: tuple["username"],
+                                     email: tuple["email"],
+                                     status: tuple["status"]
+                                  }
+                                 end
+  end
+
+  def update_user_status_to_user(user_id)
+    sql = "UPDATE users SET status = 'user' WHERE id = $1"
+    query(sql, user_id)
+  end
+
+  def update_user_status_to_admin(user_id)
+    sql = "UPDATE users SET status = 'admin' WHERE id = $1"
+    query(sql, user_id)
+  end
+
+  def remove_user_from_database(user_id)
+    sql = "DELETE FROM users WHERE id = $1"
+    query(sql, user_id)
   end
 
   def add_new_character(character)

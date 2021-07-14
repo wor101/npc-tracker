@@ -6,6 +6,8 @@
     </li>
   <% end %>
 </ul>
-<form id="new_pc" name="new_pc" method="get" action="/pcs/new">
-  <input type="submit" value="New PC">
-</form>
+<% if user_rights? %>
+  <form id="new_pc" name="new_pc" method="get" action="/pcs/new">
+    <input type="submit" value="New PC">
+  </form>
+<% end %>

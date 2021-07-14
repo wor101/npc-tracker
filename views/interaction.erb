@@ -14,9 +14,11 @@
     </li>
   <% end %>
 </ul>
-<form id="delete" action="/interactions/<%= @interaction.id %>/delete" method="post">
-  <input type="submit" value="Delete Interaction">
-</form>
-<form id="update" action="/interactions/<%= @interaction.id %>/update" method="get">
-  <input type="submit" value="Update Interaction">
-</form>
+<% if user_rights? %>
+  <form id="delete" action="/interactions/<%= @interaction.id %>/delete" method="post">
+    <input type="submit" value="Delete Interaction">
+  </form>
+  <form id="update" action="/interactions/<%= @interaction.id %>/update" method="get">
+    <input type="submit" value="Update Interaction">
+  </form>
+<% end %>

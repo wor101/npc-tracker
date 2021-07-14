@@ -22,9 +22,11 @@
     </li>
   <% end %>
 </ul>
-<form id="delete" action="/npcs/<%= @npc.id %>/delete" method="post">
-  <input type="submit" value="Delete NPC">
-</form>
-<form id="update" action="/npcs/<%= @npc.id %>/update" method="get">
-  <input type="submit" value="Update NPC">
-</form>
+<% if user_rights? %>
+  <form id="delete" action="/npcs/<%= @npc.id %>/delete" method="post">
+    <input type="submit" value="Delete NPC">
+  </form>
+  <form id="update" action="/npcs/<%= @npc.id %>/update" method="get">
+    <input type="submit" value="Update NPC">
+  </form>
+<% end %>

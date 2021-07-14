@@ -12,6 +12,9 @@
         <a href="/pcs">PCs</a>
         <a href="/npcs">NPCs</a>
         <a href="/interactions">Interactions</a>
+        <% if admin_rights? %>
+          <a href="/users">Users</a>
+        <% end %>
       </div>
        <!-- <%== yield_content :header_links %> -->
       </div>

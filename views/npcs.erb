@@ -6,6 +6,8 @@
     </li>
   <% end %>
 </ul>
-<form id="new_npc" name="new_npc" method="get" action="/npcs/new">
-    <input type="submit" value="New NPC">
-</form>
+<% if user_rights? %>
+  <form id="new_npc" name="new_npc" method="get" action="/npcs/new">
+      <input type="submit" value="New NPC">
+  </form>
+<% end %>

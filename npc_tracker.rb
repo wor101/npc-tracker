@@ -61,6 +61,16 @@ helpers do
     load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
   end
 
+  def load_user_objects(array_of_user_hashes)
+    array_of_user_hashes.map do |user_hash|
+      User.new( user_hash[:id], 
+                user_hash[:username], 
+                user_hash[:email], 
+                user_hash[:status]
+              )
+    end
+  end
+
   def create_new_character(character_hash)
     @storage.add_new_character(character_hash)
     session[:success] = "#{character_hash[:name]} has been created."
@@ -173,6 +183,12 @@ helpers do
     user_status = @storage.retrieve_user_status(username) 
     user_status == "admin"
   end
+
+  def user_rights?
+    username = session[:username]
+    user_status = @storage.retrieve_user_status(username) 
+    user_status == "user" || user_status == "admin"
+  end
   
   def redirect_to_login
     session[:error] = 'You must be signed in to do that.'
@@ -268,6 +284,50 @@ post "/new_user" do
   redirect '/login'
 end
 
+# display all users (admin only)
+get "/users" do
+  redirect "/" unless admin_rights?
+
+  @users = load_user_objects(@storage.retrieve_all_user_details_minus_password)
+  
+  erb :users, layout: :layout
+end
+
+# approve and update user status to user
+post "/users/:id/approve" do
+  redirect "/" unless admin_rights?
+
+  user_id = params[:id].to_i
+
+  @storage.update_user_status_to_user(user_id)
+
+  session[:success] = "User approved and granted user status"
+  redirect "/users"
+end
+
+# make a current user with 'user' status an admin
+post "/users/:id/admin" do
+  redirect "/" unless admin_rights?
+
+  user_id = params[:id].to_i
+
+  @storage.update_user_status_to_admin(user_id)
+
+  redirect "/users"
+end
+
+# reject and remove user from database
+post "/users/:id/reject" do
+  redirect "/" unless admin_rights?
+
+  user_id = params[:id].to_i
+
+  @storage.remove_user_from_database(user_id)
+
+  session[:success] = "User removed from database"
+  redirect "/users"
+end
+
 # list all npcs
 get "/npcs" do  
   @all_characters = load_character_objects(@storage.retrieve_all_characters)
@@ -277,12 +337,15 @@ end
 
 # display form to create a new npc
 get "/npcs/new" do
+  redirect "/npcs" unless user_rights?
 
   erb :npc_new, layout: :layout
 end
 
 # create a new npc in the database
 post "/npcs/new" do
+  redirect "/npcs" unless user_rights?
+
   npc_hash = convert_params_to_npc_hash
 
   redirect "/npcs/new" unless validate_character_hash(npc_hash)
@@ -293,6 +356,8 @@ end
 
 # delete an npc from the database
 post "/npcs/:id/delete" do
+  redirect "/npcs" unless user_rights?
+
   npc_id = params[:id]
   delete_character(npc_id)
 
@@ -304,6 +369,8 @@ end
 
 # display form to update an npc
 get "/npcs/:id/update" do
+  redirect "/npcs" unless user_rights?
+
   npc_id = params[:id]
   @npc = load_character_objects(@storage.retrieve_single_character(npc_id)).first
 
@@ -317,6 +384,8 @@ end
 
 # update an existing npc
 post "/npcs/:id/update" do
+  redirect "/npcs" unless user_rights?
+
   npc_id = params[:id].to_i
   npc_hash = convert_params_to_npc_hash
 
@@ -351,12 +420,15 @@ end
 
 # display form to create a new pc
 get "/pcs/new" do
+  redirect "/pcs" unless user_rights?
 
   erb :pc_new, layout: :layout
 end
 
 # create a new pc in the database
 post "/pcs/new" do
+  redirect "/pcs" unless user_rights?
+
   pc_hash = convert_params_to_pc_hash
 
   redirect "/pcs/new" unless validate_character_hash(pc_hash)
@@ -367,6 +439,8 @@ end
 
 # delete an pc from the database
 post "/pcs/:id/delete" do
+  redirect "/pcs" unless user_rights?
+
   pc_id = params[:id]
   delete_character(pc_id)
 
@@ -378,6 +452,8 @@ end
 
 # display form to update a pc
 get "/pcs/:id/update" do
+  redirect "/pcs" unless user_rights?
+
   pc_id = params[:id]
   @pc = load_character_objects(@storage.retrieve_single_character(pc_id)).first
 
@@ -391,6 +467,8 @@ end
 
 # update an existing pc
 post "/pcs/:id/update" do
+  redirect "/pcs" unless user_rights?
+
   pc_id = params[:id].to_i
   pc_hash = convert_params_to_pc_hash
 
@@ -424,6 +502,8 @@ end
 
 # display form to create new interaction
 get "/interactions/new" do
+  redirect "/interactions" unless user_rights?
+
   @characters = load_character_objects(@storage.retrieve_all_characters)
 
   erb :interaction_new, layout: :layout
@@ -431,6 +511,8 @@ end
 
 # create and add new interaction to database
 post "/interactions/new" do
+  redirect "/interactions" unless user_rights?
+
   interaction_hash = convert_params_to_interaction_hash
   redirect "/interactions/new" unless validate_interactions_hash(interaction_hash)
   create_new_interaction(interaction_hash)
@@ -440,6 +522,8 @@ end
 
 # delete an interaction
 post "/interactions/:id/delete" do
+  redirect "/interactions" unless user_rights?
+
   interaction_id = params[:id]
   delete_interaction(interaction_id)
 
@@ -451,6 +535,8 @@ end
 
 # display form to update an interaction
 get "/interactions/:id/update" do
+  redirect "/interactions" unless user_rights?
+
   interaction_id = params[:id]
   @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
 
@@ -469,6 +555,8 @@ end
 
 # update an existing interaction
 post "/interactions/:id/update" do
+  redirect "/interactions" unless user_rights?
+
   interaction_id = params[:id].to_i
   interaction_hash = convert_params_to_interaction_hash
   involved_character_ids = params[:involved_characters]

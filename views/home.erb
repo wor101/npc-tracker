@@ -3,6 +3,9 @@
   <li><a href="/pcs">PCs</a></li>
   <li><a href="/npcs">NPCs</a></li>
   <li><a href="/interactions">Interactions</a></li>
+  <% if admin_rights? %>
+    <li><a href="/users">Users</li>
+  <% end %>
 </ul>
 <form method="post" action="/logout">
   <input type="submit" value="Log Out">

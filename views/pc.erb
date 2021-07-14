@@ -22,9 +22,11 @@
     </li>
   <% end %>
 </ul>
-<form id="delete" action="/pcs/<%= @pc.id %>/delete" method="post">
-  <input type="submit" value="Delete PC">
-</form>
-<form id="update" action="/pcs/<%= @pc.id %>/update" method="get">
-  <input type="submit" value="Update PC">
-</form>
+<% if user_rights? %>
+  <form id="delete" action="/pcs/<%= @pc.id %>/delete" method="post">
+    <input type="submit" value="Delete PC">
+  </form>
+  <form id="update" action="/pcs/<%= @pc.id %>/update" method="get">
+    <input type="submit" value="Update PC">
+  </form>
+<% end %>
