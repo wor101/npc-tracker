@@ -194,6 +194,7 @@ class NPCTrackerTest < MiniTest::Test
     
     get last_response["Location"]
     assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user rights to update an NPC')
   end
 
   def test_delete_npc
@@ -205,6 +206,16 @@ class NPCTrackerTest < MiniTest::Test
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, 'NPC successfully deleted.')
     refute_includes(last_response.body, 'Almina Mastonen')
+  end
+
+  def test_delete_npc_without_permission
+    post '/npcs/1/delete'
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have user rights to delete an NPC')
+    
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user rights to delete an NPC')
   end
 
   def test_pcs
@@ -229,6 +240,16 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'The greatest bard to ever live!')
   end
 
+  def test_new_pc_without_permission
+    post '/pcs/new'
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have user rights to create a new PC')
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user rights to create a new PC')
+  end
+
   def test_update_pc 
     post 'pcs/1/update', pc_celestria_hash, user_session
     assert_equal(302, last_response.status)
@@ -237,6 +258,16 @@ class NPCTrackerTest < MiniTest::Test
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, 'Celestria da Crusha')
     assert_includes(last_response.body, 'Not too smart but good at crushing stuff')
+  end
+
+  def test_update_pc_without_permission
+    post 'pcs/1/update', pc_celestria_hash
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have user rights to update a PC')
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user rights to update a PC')
   end
 
   def test_delete_pc
@@ -248,6 +279,16 @@ class NPCTrackerTest < MiniTest::Test
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, 'PC successfully deleted.')
     refute_includes(last_response.body, 'Celestria Loman')
+  end
+
+  def test_delete_npc_without_permission
+    post '/pcs/16/delete', {}
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have user rights to delete a PC')
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user rights to delete a PC')
   end
 
   def test_pcs_18
@@ -313,6 +354,17 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'Heartless Heroics')
   end
 
+  def test_new_interaction_without_permission
+    post '/interactions/new', interaction_heartless_heroics_hash
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have user permission to create a new interaction')
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user permission to create a new interaction')
+    refute_includes(last_response.body, 'Heartless Heroics')
+  end
+
   def test_update_interaction
     post 'interactions/1/update', interaction_deadly_rivalry_hash, user_session
     assert_equal(302, last_response.status)
@@ -326,6 +378,16 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'Voitto Markku')
   end
 
+  def test_update_interaction_without_permission
+    post 'interactions/1/update', interaction_deadly_rivalry_hash
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have user rights to update an interaction')
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user rights to update an interaction')
+  end
+
   def test_delete_interaction
     post '/interactions/4/delete', {}, user_session
     assert_equal(302, last_response.status)
@@ -334,6 +396,17 @@ class NPCTrackerTest < MiniTest::Test
     get last_response["Location"]
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, 'Interaction successfully deleted.')
-    refute_includes(last_response.body, 'Heartless Heroics')
+    refute_includes(last_response.body, 'Stuck Between Political Rivals')
+  end
+
+  def test_delete_interaction_without_permission
+    post '/interactions/4/delete'
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have user rights to delete an interaction')
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have user rights to delete an interaction')
+    assert_includes(last_response.body, 'Stuck Between Political Rivals')
   end
 end

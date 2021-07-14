@@ -375,17 +375,20 @@ end
 
 # delete an npc from the database
 post "/npcs/:id/delete" do
+  npc_id = params[:id]
+
   if user_rights?
-    npc_id = params[:id]
     delete_character(npc_id)
 
     confirm_character_deleted(npc_id)
 
     session[:success] = "NPC successfully deleted."
+    redirect "/npcs"
   else
-    session[:error] = "You must have user rights to delete an npc"
+    session[:error] = "You must have user rights to delete a NPC"
+    redirect "/npcs/#{npc_id}"
   end
-  redirect "/npcs"
+
 end
 
 # display form to update an npc
