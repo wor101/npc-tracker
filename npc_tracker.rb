@@ -321,7 +321,7 @@ post "/users/:id/admin" do
     user_id = params[:id].to_i
 
     @storage.update_user_status_to_admin(user_id)
-
+    session[:success] = "User has been made admin"
     redirect "/users"
   else
     redirect_no_admin_rights

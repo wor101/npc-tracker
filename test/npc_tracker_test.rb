@@ -409,4 +409,117 @@ class NPCTrackerTest < MiniTest::Test
     assert_includes(last_response.body, 'You must have user rights to delete an interaction')
     assert_includes(last_response.body, 'Stuck Between Political Rivals')
   end
+
+  def test_login
+    get '/login'
+    assert_equal(200, last_response.status)
+  end
+
+  def test_new_user_form
+    get '/new_user'
+    assert_equal(200, last_response.status)
+  end
+
+  def new_user_hash
+    { username: "new_user", email: "new_user@email.com", password: "password", password_match: "password"}
+  end
+
+  def test_submit_new_user
+    post '/new_user', new_user_hash
+    assert_equal(302, last_response.status)
+    assert_equal(session[:success], 'User new_user has been created!')
+
+    post '/login', {username: "new_user", password: "password"}
+    assert_equal(302, last_response.status)
+    assert_equal(session[:success], 'Welcome new_user!')
+  end
+
+  def test_logout
+    post '/logout', {}, user_session
+    assert_equal(302, last_response.status)
+    assert_equal(session[:success], 'User has logged out')
+    assert_nil(session[:username])
+    assert_equal(session[:signed_in], false)
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'Login')
+  end
+
+  def test_users
+    get '/users', {}, admin_session
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'Current User: admin')
+  end
+
+  def test_users_without_permission
+    get '/users', {}, user_session
+    assert_equal(302, last_response.status)
+    assert_equal(session[:error], 'You must have admin rights to perform that action')
+
+    get last_response["Location"]
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, 'You must have admin rights to perform that action')
+  end
+  
+  def test_approve_pending_user
+    post '/users/3/approve', {}, admin_session
+    assert_equal(session[:success], 'User approved and granted user status')
+    assert_equal(302, last_response.status)
+
+    get last_response["Location"], {}, admin_session
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, '3: pending_user - pending_user@email.com [user]')
+  end
+
+  def test_approve_pending_user_without_permission
+    post '/users/3/approve'
+    assert_equal(session[:error], 'You must have admin rights to perform that action')
+    assert_equal(302, last_response.status)
+
+    get last_response["Location"]
+    assert_equal(302, last_response.status)
+
+    get '/users', {}, admin_session
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, '3: pending_user - pending_user@email.com [pending]')
+  end
+
+  def test_make_admin
+    post '/users/2/admin', {}, admin_session
+    assert_equal(session[:success], 'User has been made admin')
+    assert_equal(302, last_response.status)
+
+    get last_response["Location"], {}, admin_session
+    assert_equal(200, last_response.status) 
+    assert_includes(last_response.body, '2: normal_user - normal_user@email.com [admin]')   
+  end
+
+  def test_make_admin_without_permission
+    post '/users/2/admin'
+    assert_equal(session[:error], 'You must have admin rights to perform that action')
+    assert_equal(302, last_response.status)
+
+    get '/users', {}, admin_session
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, '2: normal_user - normal_user@email.com [user]')
+  end
+
+  def test_reject_user
+    post '/users/2/reject', {}, admin_session
+    assert_equal(session[:success], 'User removed from database')
+
+    get '/users', {}, admin_session
+    assert_equal(200, last_response.status)
+    refute_includes(last_response.body, '2: normal_user - normal_user@email.com [user]')
+  end
+
+  def test_reject_user_without_permission
+    post '/users/2/reject'
+    assert_equal(session[:error], 'You must have admin rights to perform that action')
+
+    get '/users', {}, admin_session
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, '2: normal_user - normal_user@email.com [user]')
+  end
 end
