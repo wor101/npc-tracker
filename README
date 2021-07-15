@@ -1,1 +1,6 @@
-https://wor101-npc-tracker.herokuapp.com/ | https://git.heroku.com/wor101-npc-tracker.git
+Sinatra app for managing character interactions in RPGs
+
+A simple CRUD app using a PostgreSQL database to manage interactions between characters (non-player characters & player characters).
+
+Deployed on heroku at:
+https://wor101-npc-tracker.herokuapp.com/ 
