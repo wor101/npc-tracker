@@ -634,7 +634,9 @@ get '/interactions/:id' do
   @interaction = load_interaction_objects(@storage.retrieve_single_interaction(interaction_id)).first
 
   if @interaction
-    @interaction_npcs = load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
+    all_interaction_characters = load_character_objects(@storage.retrieve_single_interaction_characters(interaction_id))
+    @interaction_npcs = all_interaction_characters.select { |character| character.player_character == false }
+    @interaction_pcs = all_interaction_characters.select { |character| character.player_character == true }
 
     erb :interaction, layout: :layout
   else

@@ -14,6 +14,14 @@
     </li>
   <% end %>
 </ul>
+<h2>PCs</h2>
+<ul>
+  <% @interaction_pcs.each do |pc| %>
+    <li>
+      <a href="/npcs/<%= pc.id %>"><%= pc.name %></a>
+    </li>
+  <% end %>
+</ul>
 <% if user_rights? %>
   <form id="delete" action="/interactions/<%= @interaction.id %>/delete" method="post">
     <input type="submit" value="Delete Interaction">
