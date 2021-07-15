@@ -4,3 +4,6 @@ A simple CRUD app using a PostgreSQL database to manage interactions between cha
 
 Deployed on heroku at:
 https://wor101-npc-tracker.herokuapp.com/ 
+
+Github:
+https://github.com/wor101/npc_tracker
