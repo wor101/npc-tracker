@@ -3,7 +3,6 @@
 require 'sinatra'
 require 'sinatra/content_for'
 require 'tilt/erubis'
-require 'pry'
 require 'bcrypt'
 
 require_relative 'database_persistence'

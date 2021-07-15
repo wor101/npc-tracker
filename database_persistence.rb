@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'pg'
-require 'pry'
 
 class DatabasePersistence
   def initialize(logger)

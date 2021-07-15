@@ -1,2 +1,2 @@
-require './npc_tracer'
+require './npc_tracker'
 run Sinatra::Application
