@@ -1,14 +1,16 @@
-require "pg"
-require "pry"
+# frozen_string_literal: true
+
+require 'pg'
+require 'pry'
 
 class DatabasePersistence
   def initialize(logger)
-    @db = if Sinatra::Base.production? 
+    @db = if Sinatra::Base.production?
             PG.connect(ENV['DATABASE_URL'])
           elsif ENV['RACK_ENV'] == 'test'
-            PG.connect(dbname: "npc_tracker_test")
+            PG.connect(dbname: 'npc_tracker_test')
           else
-            PG.connect(dbname: "npc_tracker")
+            PG.connect(dbname: 'npc_tracker')
           end
     @logger = logger
   end
@@ -23,14 +25,14 @@ class DatabasePersistence
   end
 
   def retrieve_all_characters
-    sql = "SELECT * FROM characters"
+    sql = 'SELECT * FROM characters ORDER BY name'
     result = query(sql)
 
     convert_character_pg_to_array_of_hashes(result)
   end
 
   def retrieve_single_character(id)
-    sql = "SELECT * FROM characters WHERE id = $1"
+    sql = 'SELECT * FROM characters WHERE id = $1'
     result = query(sql, id)
     convert_character_pg_to_array_of_hashes(result)
   end
@@ -47,16 +49,16 @@ class DatabasePersistence
   end
 
   def retrieve_all_interactions
-    sql = "SELECT * FROM interactions"
+    sql = 'SELECT * FROM interactions ORDER BY short_description'
     result = query(sql)
 
     convert_interaction_pg_to_array_of_hashes(result)
   end
 
   def retrieve_single_interaction(id)
-    sql = "SELECT * FROM interactions WHERE id = $1"
+    sql = 'SELECT * FROM interactions WHERE id = $1'
     result = query(sql, id)
-    
+
     convert_interaction_pg_to_array_of_hashes(result)
   end
 
@@ -78,57 +80,56 @@ class DatabasePersistence
       AND short_description = $2
       AND full_description = $3
     SQL
-    result = query(sql, interaction_hash[:attitude], 
-                        interaction_hash[:short_description],
-                        interaction_hash[:full_description]
-                  )
-    result.first["id"].to_i
+    result = query(sql,
+                   interaction_hash[:attitude],
+                   interaction_hash[:short_description],
+                   interaction_hash[:full_description])
+
+    result.first['id'].to_i
   end
 
   def retrieve_usernames
-    sql = "SELECT username FROM users"
+    sql = 'SELECT username FROM users'
     result = query(sql)
-    result.map { |tuple| tuple["username"] }
-   end
+    result.map { |tuple| tuple['username'] }
+  end
 
   def add_pending_user(username, password, email)
     sql = <<~SQL
-      INSERT INTO users (username, password, email) 
+      INSERT INTO users (username, password, email)
       VALUES ($1, $2, $3)
     SQL
     query(sql, username, password, email)
   end
 
-  def retrieve_user_status(username) 
-    sql = "SELECT status FROM users WHERE username = $1"
+  def retrieve_user_status(username)
+    sql = 'SELECT status FROM users WHERE username = $1'
     result = query(sql, username)
-    result.map { |tuple| tuple["status"] }.first
+    result.map { |tuple| tuple['status'] }.first
   end
 
   def retrieve_user_details(username)
-    sql = "SELECT * FROM users WHERE username = $1"
+    sql = 'SELECT * FROM users WHERE username = $1'
     result = query(sql, username)
     array_with_user_hash = result.map do |tuple|
-                            { id: tuple["id"],
-                              username: tuple["username"],
-                              password: tuple["password"],
-                              email: tuple["email"],
-                              status: tuple["status"]
-                            }
-                          end
+                             { id: tuple['id'],
+                               username: tuple['username'],
+                               password: tuple['password'],
+                               email: tuple['email'],
+                               status: tuple['status'] }
+                           end
     array_with_user_hash.first
   end
 
   def retrieve_all_user_details_minus_password
-    sql = "SELECT id, username, email, status FROM users"
+    sql = 'SELECT id, username, email, status FROM users'
     result = query(sql)
-    array_with_hashes_of_users = result.map do |tuple|
-                                   { id: tuple["id"],
-                                     username: tuple["username"],
-                                     email: tuple["email"],
-                                     status: tuple["status"]
-                                  }
-                                 end
+    result.map do |tuple|
+      { id: tuple['id'],
+        username: tuple['username'],
+        email: tuple['email'],
+        status: tuple['status'] }
+    end
   end
 
   def update_user_status_to_user(user_id)
@@ -142,7 +143,7 @@ class DatabasePersistence
   end
 
   def remove_user_from_database(user_id)
-    sql = "DELETE FROM users WHERE id = $1"
+    sql = 'DELETE FROM users WHERE id = $1'
     query(sql, user_id)
   end
 
@@ -150,27 +151,27 @@ class DatabasePersistence
     sql = <<~SQL
       INSERT INTO characters (name,
                               player_character,
-                              picture_link, 
-                              stat_block_name, 
-                              stat_block_link, 
-                              main_location, 
+                              picture_link,
+                              stat_block_name,
+                              stat_block_link,
+                              main_location,
                               alignment,
                               ancestory,
-                              gender, 
+                              gender,
                               short_description)
       VALUES ($1, $2, $3, $4,$5, $6, $7, $8, $9, $10)
     SQL
-    query( sql, character[:name],
-                character[:player_character],
-                character[:picture_link],
-                character[:stat_block_name],
-                character[:stat_block_link],
-                character[:main_location],
-                character[:alignment],
-                character[:ancestory],
-                character[:gender],
-                character[:short_description]
-          )
+    query(sql,
+          character[:name],
+          character[:player_character],
+          character[:picture_link],
+          character[:stat_block_name],
+          character[:stat_block_link],
+          character[:main_location],
+          character[:alignment],
+          character[:ancestory],
+          character[:gender],
+          character[:short_description])
   end
 
   def update_character(character, character_id)
@@ -188,43 +189,43 @@ class DatabasePersistence
         WHERE id = $10
     SQL
 
-    query(sql, character[:name],
-               character[:picture_link],
-               character[:stat_block_name],
-               character[:stat_block_link],
-               character[:main_location],
-               character[:alignment],
-               character[:ancestory],
-               character[:gender],
-               character[:short_description],
-               character_id.to_i
-          )
+    query(sql,
+          character[:name],
+          character[:picture_link],
+          character[:stat_block_name],
+          character[:stat_block_link],
+          character[:main_location],
+          character[:alignment],
+          character[:ancestory],
+          character[:gender],
+          character[:short_description],
+          character_id.to_i)
   end
 
   def delete_character(id)
-    sql = "DELETE FROM characters WHERE id = $1"
+    sql = 'DELETE FROM characters WHERE id = $1'
     query(sql, id)
   end
 
   def delete_interaction(id)
-    sql = "DELETE FROM interactions WHERE id = $1"
+    sql = 'DELETE FROM interactions WHERE id = $1'
     query(sql, id)
   end
 
   def add_new_interaction(interaction)
     sql = <<~SQL
-      INSERT INTO interactions (attitude, date, short_description, full_description) 
+      INSERT INTO interactions (attitude, date, short_description, full_description)
         VALUES ($1, $2, $3, $4)
     SQL
-    
-    query(sql, interaction[:attitude], 
-               interaction[:date], 
-               interaction[:short_description],
-               interaction[:full_description]
-          )
+
+    query(sql,
+          interaction[:attitude],
+          interaction[:date],
+          interaction[:short_description],
+          interaction[:full_description])
   end
 
-  def update_interaction(interaction, interaction_id)  
+  def update_interaction(interaction, interaction_id)
     # if any charcters removed from interaction, must delete their related entries from cross-reference table
     sql = <<~SQL
       UPDATE interactions SET
@@ -234,12 +235,12 @@ class DatabasePersistence
         full_description = $4
       WHERE id = $5
     SQL
-    query(sql, interaction[:attitude],
-               interaction[:date],
-               interaction[:short_description],
-               interaction[:full_description],
-               interaction_id
-          )
+    query(sql,
+          interaction[:attitude],
+          interaction[:date],
+          interaction[:short_description],
+          interaction[:full_description],
+          interaction_id)
   end
 
   # delete current entries in characters_interactions that contain all character_id && interaction_id
@@ -250,7 +251,7 @@ class DatabasePersistence
 
     query(sql, interaction_id)
   end
-  
+
   # add entries to characters_interactions with for all new character_id with the interaction_id
   def add_interaction_entries_to_characters_interactions(involved_character_ids, interaction_id)
     sql = <<~SQL
@@ -258,7 +259,7 @@ class DatabasePersistence
       VALUES ($1, $2)
     SQL
 
-    involved_character_ids.each { |character_id| query(sql, interaction_id, character_id)}
+    involved_character_ids.each { |character_id| query(sql, interaction_id, character_id) }
   end
 
   def add_interaction_to_cross_reference_table(interaction_id, involved_character_ids)
@@ -274,27 +275,27 @@ class DatabasePersistence
 
   def convert_character_pg_to_array_of_hashes(character_pg)
     character_pg.map do |tuple|
-      { id: tuple["id"].to_i, 
-        player_character: tuple["player_character"] == "t",
-        name: tuple["name"],
-        picture_link: tuple["picture_link"],
-        stat_block_name: tuple["stat_block_name"],
-        stat_block_link: tuple["stat_block_link"],
-        main_location: tuple["main_location"].to_i,
-        alignment: tuple["alignment"],
-        ancestory: tuple["ancestory"],
-        gender: tuple["gender"],
-        short_description: tuple["short_description"] }
+      { id: tuple['id'].to_i,
+        player_character: tuple['player_character'] == 't',
+        name: tuple['name'],
+        picture_link: tuple['picture_link'],
+        stat_block_name: tuple['stat_block_name'],
+        stat_block_link: tuple['stat_block_link'],
+        main_location: tuple['main_location'].to_i,
+        alignment: tuple['alignment'],
+        ancestory: tuple['ancestory'],
+        gender: tuple['gender'],
+        short_description: tuple['short_description'] }
     end
   end
 
   def convert_interaction_pg_to_array_of_hashes(interaction_pg)
     interaction_pg.map do |tuple|
-      { id: tuple["id"].to_i,
-        attitude: tuple["attitude"],
-        date: tuple["date"],
-        short_description: tuple["short_description"],
-        full_description: tuple["full_description"] }
+      { id: tuple['id'].to_i,
+        attitude: tuple['attitude'],
+        date: tuple['date'],
+        short_description: tuple['short_description'],
+        full_description: tuple['full_description'] }
     end
   end
 end
